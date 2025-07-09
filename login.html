@@ -4,19 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Gate Fee System</title>
-  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 400px;
-      margin: 50px auto;
+      max-width: 500px;
+      margin: 40px auto;
       padding: 20px;
+    }
+    h2 {
       text-align: center;
     }
     label {
       display: block;
       margin-top: 15px;
-      text-align: left;
     }
     input {
       width: 100%;
@@ -24,13 +24,21 @@
       margin-top: 5px;
     }
     button {
-      margin-top: 20px;
-      padding: 10px 20px;
+      margin-top: 15px;
+      padding: 10px;
       background: #4CAF50;
       color: white;
       border: none;
-      cursor: pointer;
       width: 100%;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .section {
+      margin-top: 40px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
     }
   </style>
 </head>
@@ -38,28 +46,66 @@
 
   <h2>Login</h2>
 
-  <label for="username">Username:</label>
-  <input type="text" id="username" />
-
-  <label for="password">Password:</label>
-  <input type="password" id="password" />
-
+  <label>Username:
+    <input type="text" id="username" />
+  </label>
+  <label>Password:
+    <input type="password" id="password" />
+  </label>
   <button onclick="login()">Login</button>
 
-  <p style="margin-top:20px;"><strong>Default Admin:</strong><br>Username: <code>admin</code><br>Password: <code>admin123</code></p>
+  <div class="section">
+    <h2>Forgot Password?</h2>
+    <label>Username: <input type="text" id="resetUsername" /></label>
+    <label>Email/Phone: <input type="text" id="resetContact" /></label>
+    <label>New Password: <input type="password" id="resetPassword" /></label>
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
 
   <script>
-    function login() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+    }
 
-      if (username === "admin" && password === "admin123") {
-        alert("Login successful! Redirecting...");
-        window.location.href = "enter-fee.html";
+    function login() {
+      const uname = document.getElementById("username").value.trim();
+      const pword = document.getElementById("password").value;
+
+      const users = getUsers();
+
+      if (users[uname] && users[uname].password === pword) {
+        localStorage.setItem("loggedInUser", uname);
+        alert("Login successful!");
+        window.location.href = "enter-gate-fee.html";
       } else {
-        alert("Invalid username or password!");
+        alert("Invalid username or password");
       }
     }
+
+    function resetPassword() {
+      const uname = document.getElementById("resetUsername").value.trim();
+      const contact = document.getElementById("resetContact").value.trim();
+      const newPass = document.getElementById("resetPassword").value;
+
+      const users = getUsers();
+
+      if (users[uname] && users[uname].contact === contact) {
+        users[uname].password = newPass;
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+        alert("Password updated successfully!");
+      } else {
+        alert("User not found or contact does not match");
+      }
+    }
+
+    // Initialize default admin on first load
+    window.onload = () => {
+      const users = getUsers();
+      if (!users.admin) {
+        users.admin = { password: "admin123", contact: "admin@example.com" };
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      }
+    };
   </script>
 
 </body>
