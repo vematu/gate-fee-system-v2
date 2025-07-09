@@ -1,2 +1,90 @@
 <!DOCTYPE html>
-<html>...REGISTER SUPPORTER PAGE CONTENT HERE...</html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register Supporter</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      font-size: 16px;
+    }
+    .success {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Register Supporter</h2>
+
+  <form id="supporterForm">
+    <label>Full Name: <input type="text" name="name" required /></label>
+    <label>Gender:
+      <select name="gender" required>
+        <option value="">--Select Gender--</option>
+        <option>Male</option>
+        <option>Female</option>
+      </select>
+    </label>
+    <label>Date of Birth: <input type="date" name="dob" required /></label>
+    <label>Phone Number: <input type="tel" name="phone" required /></label>
+    <label>Nationality: <input type="text" name="nationality" required /></label>
+    <label>District: <input type="text" name="district" required /></label>
+    <label>County: <input type="text" name="county" required /></label>
+    <label>Sub-county: <input type="text" name="subcounty" required /></label>
+    <label>Parish: <input type="text" name="parish" required /></label>
+    <label>Village: <input type="text" name="village" required /></label>
+    <label>Occupation: <input type="text" name="occupation" required /></label>
+    <label>ID Number (e.g., NIN): <input type="text" name="idNumber" required /></label>
+
+    <button type="submit">Save Supporter</button>
+  </form>
+
+  <p id="successMessage" class="success" style="display: none;">Supporter data saved successfully!</p>
+
+  <script>
+    document.getElementById("supporterForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const supporter = {};
+
+      formData.forEach((value, key) => {
+        supporter[key] = value;
+      });
+
+      // Save supporter to local storage
+      const supporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
+      supporters.push(supporter);
+      localStorage.setItem("supportersData", JSON.stringify(supporters));
+
+      document.getElementById("successMessage").style.display = "block";
+      e.target.reset();
+    });
+  </script>
+
+</body>
+</html>
