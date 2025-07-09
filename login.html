@@ -1,2 +1,66 @@
 <!DOCTYPE html>
-<html>...LOGIN PAGE CONTENT HERE...</html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      text-align: left;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Login</h2>
+
+  <label for="username">Username:</label>
+  <input type="text" id="username" />
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" />
+
+  <button onclick="login()">Login</button>
+
+  <p style="margin-top:20px;"><strong>Default Admin:</strong><br>Username: <code>admin</code><br>Password: <code>admin123</code></p>
+
+  <script>
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      if (username === "admin" && password === "admin123") {
+        alert("Login successful! Redirecting...");
+        window.location.href = "enter-fee.html";
+      } else {
+        alert("Invalid username or password!");
+      }
+    }
+  </script>
+
+</body>
+</html>
