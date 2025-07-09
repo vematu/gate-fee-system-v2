@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>View Supporters</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background: #f2f2f2;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Registered Supporters</h2>
+
+  <input type="text" id="searchInput" placeholder="Search by name, phone, district, etc..." />
+
+  <table id="supportersTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Gender</th>
+        <th>DOB</th>
+        <th>Phone</th>
+        <th>District</th>
+        <th>Subcounty</th>
+        <th>ID Number</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="downloadSupporters()">Download CSV</button>
+
+  <script>
+    const tableBody = document.querySelector("#supportersTable tbody");
+    const searchInput = document.getElementById("searchInput");
+
+    function loadSupporters() {
+      const data = JSON.parse(localStorage.getItem("supportersData") || "[]");
+      tableBody.innerHTML = "";
+
+      data.forEach(s => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${s.name}</td>
+          <td>${s.gender}</td>
+          <td>${s.dob}</td>
+          <td>${s.phone}</td>
+          <td>${s.district}</td>
+          <td>${s.subcounty}</td>
+          <td>${s.idNumber}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function filterSupporters() {
+      const keyword = searchInput.value.toLowerCase();
+      const rows = tableBody.querySelectorAll("tr");
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(keyword) ? "" : "none";
+      });
+    }
+
+    function downloadSupporters() {
+      const data = JSON.parse(localStorage.getItem("supportersData") || "[]");
+      if (data.length === 0) {
+        alert("No data to export.");
+        return;
+      }
+
+      let csv = "Name,Gender,DOB,Phone,District,Subcounty,ID Number\n";
+      data.forEach(s => {
+        csv += `${s.name},${s.gender},${s.dob},${s.phone},${s.district},${s.subcounty},${s.idNumber}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "supporters_data.csv";
+      a.click();
+    }
+
+    searchInput.addEventListener("input", filterSupporters);
+
+    window.onload = loadSupporters;
+  </script>
+
+</body>
+</html>
