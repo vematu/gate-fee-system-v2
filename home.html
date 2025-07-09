@@ -3,39 +3,70 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Home - Gate Fee System</title>
+  <title>Dashboard - Gate Fee System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
       padding: 20px;
-      max-width: 600px;
-      margin: auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+
     h2 {
-      text-align: center;
-    }
-    .user-info {
       text-align: center;
       margin-bottom: 20px;
     }
-    .nav-buttons {
-      display: flex;
-      flex-direction: column;
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .menu {
+      display: grid;
       gap: 15px;
     }
-    button {
-      padding: 12px;
+
+    .menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      padding: 15px;
       background: #4CAF50;
       color: white;
       border: none;
-      font-size: 16px;
+      border-radius: 10px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-    button:hover {
-      background: #45a049;
+
+    .menu button:hover {
+      background: #388e3c;
     }
+
+    .menu i {
+      font-size: 20px;
+      width: 25px;
+      text-align: center;
+    }
+
     .logout {
       background: #f44336;
+    }
+
+    .logout:hover {
+      background: #d32f2f;
     }
   </style>
 </head>
@@ -48,16 +79,19 @@
     }
   </script>
 
-  <h2>Gate Fee System</h2>
-  <div class="user-info">
-    <p>Welcome, <strong id="usernameDisplay"></strong></p>
-  </div>
+  <div class="container">
+    <h2>Gate Fee System</h2>
+    <div class="user-info">
+      <p>Welcome, <strong id="usernameDisplay"></strong></p>
+    </div>
 
-  <div class="nav-buttons">
-    <button onclick="location.href='enter-gate-fee.html'">Enter Gate Fee</button>
-    <button onclick="location.href='view-data.html'">View Records</button>
-    <button onclick="location.href='add-user.html'">Add User (Admin)</button>
-    <button onclick="logout()" class="logout">Logout</button>
+    <div class="menu">
+      <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
+      <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
+      <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
+      <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
+      <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
   </div>
 
   <script>
