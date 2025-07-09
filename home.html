@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home - Gate Fee System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+    }
+    .user-info {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .nav-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    button {
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .logout {
+      background: #f44336;
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (!loggedInUser) {
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <h2>Gate Fee System</h2>
+  <div class="user-info">
+    <p>Welcome, <strong id="usernameDisplay"></strong></p>
+  </div>
+
+  <div class="nav-buttons">
+    <button onclick="location.href='enter-gate-fee.html'">Enter Gate Fee</button>
+    <button onclick="location.href='view-data.html'">View Records</button>
+    <button onclick="location.href='add-user.html'">Add User (Admin)</button>
+    <button onclick="logout()" class="logout">Logout</button>
+  </div>
+
+  <script>
+    document.getElementById("usernameDisplay").textContent = localStorage.getItem("loggedInUser");
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>
