@@ -1,3 +1,9 @@
+<script>
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  if (!loggedInUser) {
+    window.location.href = "login.html";
+  }
+</script>
 <!DOCTYPE html>
 <html>
 <head><meta charset='UTF-8'><title>Enter Fee</title></head>
