@@ -1,2 +1,111 @@
 <!DOCTYPE html>
-<html>...ADD USER PAGE CONTENT HERE...</html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Add New User - Gate Fee System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    #status {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Add New User</h2>
+
+  <div id="adminOnly">
+    <label>New Username: <input type="text" id="newUsername" /></label>
+    <label>Password: <input type="password" id="newPassword" /></label>
+    <label>Email or Phone: <input type="text" id="newContact" /></label>
+    <button onclick="createUser()">Create User</button>
+    <p id="status"></p>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+    }
+
+    function saveUsers(users) {
+      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+    }
+
+    function createUser() {
+      const uname = document.getElementById("newUsername").value.trim();
+      const pword = document.getElementById("newPassword").value.trim();
+      const contact = document.getElementById("newContact").value.trim();
+      const users = getUsers();
+
+      if (!uname || !pword || !contact) {
+        document.getElementById("status").textContent = "All fields are required.";
+        return;
+      }
+
+      if (users[uname]) {
+        document.getElementById("status").textContent = "User already exists.";
+        return;
+      }
+
+      users[uname] = {
+        password: pword,
+        contact: contact
+      };
+      saveUsers(users);
+      document.getElementById("status").textContent = `User '${uname}' added successfully!`;
+
+      // Clear inputs
+      document.getElementById("newUsername").value = "";
+      document.getElementById("newPassword").value = "";
+      document.getElementById("newContact").value = "";
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
+    }
+
+    // Allow only admin to access this page
+    window.onload = () => {
+      const loggedInUser = localStorage.getItem("loggedInUser");
+      if (loggedInUser !== "admin") {
+        alert("Access denied. Only admin can add users.");
+        window.location.href = "login.html";
+      }
+    };
+  </script>
+
+</body>
+</html>
