@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gate Fee Records</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+    }
+    th {
+      background: #f2f2f2;
+    }
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Gate Fee Records</h2>
+
+  <input type="text" id="searchInput" placeholder="Search by name, phone, event..." />
+
+  <table id="feeTable">
+    <thead>
+      <tr>
+        <th>Receipt No</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Event</th>
+        <th>Amount</th>
+        <th>Method</th>
+        <th>Date</th>
+        <th>Served By</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <button onclick="downloadFees()">Download CSV</button>
+
+  <script>
+    const tableBody = document.querySelector("#feeTable tbody");
+    const searchInput = document.getElementById("searchInput");
+
+    function loadFeeData() {
+      const data = JSON.parse(localStorage.getItem("gateFeeBackup") || "[]");
+      tableBody.innerHTML = "";
+
+      data.forEach(entry => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${entry.receiptNo}</td>
+          <td>${entry.name}</td>
+          <td>${entry.phone}</td>
+          <td>${entry.event}</td>
+          <td>UGX ${entry.amount}</td>
+          <td>${entry.method}</td>
+          <td>${entry.date}</td>
+          <td>${entry.servedBy}</td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
+
+    function filterFeeData() {
+      const keyword = searchInput.value.toLowerCase();
+      const rows = tableBody.querySelectorAll("tr");
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(keyword) ? "" : "none";
+      });
+    }
+
+    function downloadFees() {
+      const data = JSON.parse(localStorage.getItem("gateFeeBackup") || "[]");
+      if (!data.length) {
+        alert("No data to export.");
+        return;
+      }
+
+      let csv = "Receipt No,Name,Phone,Event,Amount,Method,Date,Served By\n";
+      data.forEach(d => {
+        csv += `${d.receiptNo},${d.name},${d.phone},${d.event},${d.amount},${d.method},${d.date},${d.servedBy}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "gate_fee_data.csv";
+      a.click();
+    }
+
+    searchInput.addEventListener("input", filterFeeData);
+
+    window.onload = loadFeeData;
+  </script>
+
+</body>
+</html>
