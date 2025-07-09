@@ -1,68 +1,170 @@
-<script>
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if (!loggedInUser) {
-    window.location.href = "login.html";
-  }
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gate Fee System</title>
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>Welcome - Gate Fee System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .header {
+      background: #4CAF50;
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .login-icon {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 60px auto;
+      background: white;
       padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .icon-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 30px;
-      margin-top: 40px;
-    }
-    .icon-box {
-      border: 1px solid #ccc;
-      border-radius: 15px;
-      padding: 30px;
+
+    h2 {
       text-align: center;
-      font-size: 24px;
-      background: #f9f9f9;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
     }
-    .icon-box a {
-      text-decoration: none;
-      color: #333;
+
+    label {
       display: block;
+      margin-top: 15px;
     }
-    .icon-box i {
-      font-size: 36px;
-      margin-bottom: 10px;
-      color: #4CAF50;
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #388e3c;
+    }
+
+    .link {
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .link a {
+      color: #007BFF;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    #resetForm {
+      display: none;
+      margin-top: 30px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h2>Gate Fee System</h2>
-  <div class="icon-grid">
-    <div class="icon-box">
-      <a href="login.html"><i class="fas fa-sign-in-alt"></i> Login</a>
+
+  <div class="header">
+    <div><strong>Gate Fee System</strong></div>
+    <div class="login-icon" title="Switch user / Log in again"><i class="fas fa-user-circle"></i></div>
+  </div>
+
+  <div class="container">
+    <h2>Welcome to the Gate Fee System</h2>
+
+    <label>Username:
+      <input type="text" id="username" />
+    </label>
+    <label>Password:
+      <input type="password" id="password" />
+    </label>
+    <button onclick="login()">Login</button>
+
+    <div class="link">
+      <a onclick="showReset()">Forgot Password?</a>
     </div>
-    <div class="icon-box">
-      <a href="enter-fee.html"><i class="fas fa-cash-register"></i> Enter Gate Fee</a>
-    </div>
-    <div class="icon-box">
-      <a href="view-data.html"><i class="fas fa-database"></i> View Data</a>
-    </div>
-    <div class="icon-box">
-      <a href="register-supporter.html"><i class="fas fa-users"></i> Register Supporter</a>
-    </div>
-    <div class="icon-box">
-      <a href="add-user.html"><i class="fas fa-user-plus"></i> Add User</a>
+
+    <div id="resetForm">
+      <h3>Reset Password</h3>
+      <label>Username: <input type="text" id="resetUsername" /></label>
+      <label>Email/Phone: <input type="text" id="resetContact" /></label>
+      <label>New Password: <input type="password" id="resetPassword" /></label>
+      <button onclick="resetPassword()">Reset Password</button>
     </div>
   </div>
+
+  <script>
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+    }
+
+    function login() {
+      const uname = document.getElementById("username").value.trim();
+      const pword = document.getElementById("password").value;
+      const users = getUsers();
+
+      if (users[uname] && users[uname].password === pword) {
+        localStorage.setItem("loggedInUser", uname);
+        alert("Login successful!");
+        window.location.href = "home.html";
+      } else {
+        alert("Invalid username or password");
+      }
+    }
+
+    function resetPassword() {
+      const uname = document.getElementById("resetUsername").value.trim();
+      const contact = document.getElementById("resetContact").value.trim();
+      const newPass = document.getElementById("resetPassword").value;
+      const users = getUsers();
+
+      if (users[uname] && users[uname].contact === contact) {
+        users[uname].password = newPass;
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+        alert("Password updated successfully!");
+        document.getElementById("resetForm").style.display = "none";
+      } else {
+        alert("User not found or contact does not match");
+      }
+    }
+
+    function showReset() {
+      document.getElementById("resetForm").style.display = "block";
+    }
+
+    // Auto-create admin if not found
+    window.onload = () => {
+      const users = getUsers();
+      if (!users.admin) {
+        users.admin = { password: "admin123", contact: "admin@example.com" };
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      }
+    };
+  </script>
+
 </body>
 </html>
