@@ -35,8 +35,18 @@
     button:hover {
       background: #45a049;
     }
-    .section {
-      margin-top: 40px;
+    .link {
+      margin-top: 10px;
+      text-align: center;
+    }
+    .link a {
+      color: #007BFF;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+    #resetForm {
+      display: none;
+      margin-top: 30px;
       border-top: 1px solid #ccc;
       padding-top: 20px;
     }
@@ -54,8 +64,12 @@
   </label>
   <button onclick="login()">Login</button>
 
-  <div class="section">
-    <h2>Forgot Password?</h2>
+  <div class="link">
+    <a onclick="showReset()">Forgot Password?</a>
+  </div>
+
+  <div id="resetForm">
+    <h3>Reset Password</h3>
     <label>Username: <input type="text" id="resetUsername" /></label>
     <label>Email/Phone: <input type="text" id="resetContact" /></label>
     <label>New Password: <input type="password" id="resetPassword" /></label>
@@ -70,7 +84,6 @@
     function login() {
       const uname = document.getElementById("username").value.trim();
       const pword = document.getElementById("password").value;
-
       const users = getUsers();
 
       if (users[uname] && users[uname].password === pword) {
@@ -86,19 +99,23 @@
       const uname = document.getElementById("resetUsername").value.trim();
       const contact = document.getElementById("resetContact").value.trim();
       const newPass = document.getElementById("resetPassword").value;
-
       const users = getUsers();
 
       if (users[uname] && users[uname].contact === contact) {
         users[uname].password = newPass;
         localStorage.setItem("gateSystemUsers", JSON.stringify(users));
         alert("Password updated successfully!");
+        document.getElementById("resetForm").style.display = "none";
       } else {
         alert("User not found or contact does not match");
       }
     }
 
-    // Initialize default admin on first load
+    function showReset() {
+      document.getElementById("resetForm").style.display = "block";
+    }
+
+    // Initialize default admin
     window.onload = () => {
       const users = getUsers();
       if (!users.admin) {
