@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset='UTF-8'><title>Enter Fee</title></head>
+<body>
+<h2>Enter Fee Page (Bluetooth Enabled)</h2>
+<!-- form elements go here -->
+
+<script>
+  // ... (existing JS logic) ...
+
+  async function bluetoothPrint(entry) {
+    const text = `
+---------------------------
+      GATE RECEIPT
+---------------------------
+Receipt No: ${entry.receiptNo}
+Name: ${entry.name}
+Phone: ${entry.phone}
+Event: ${entry.event}
+Amount: UGX ${entry.amount}
+Method: ${entry.method}
+Date: ${entry.date}
+Served By: ${entry.servedBy}
+---------------------------
+     Thank you!
+`;
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text + "\n\n\n");
+
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'MPT' }, { services: ['0000ffe0-0000-1000-8000-00805f9b34fb'] }],
+        optionalServices: ['battery_service']
+      });
+
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
+      const characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
+      await characteristic.writeValue(data);
+      alert("Receipt sent to printer!");
+
+    } catch (error) {
+      alert("Bluetooth printing failed: " + error);
+      console.error(error);
+    }
+  }
+</script>
+
+</body>
+</html>
