@@ -4,17 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Enter Gate Fee</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       background: #f0f2f5;
+      padding: 20px;
     }
-
-    h2 {
-      text-align: center;
-    }
-
+    h2 { text-align: center; }
     form {
       max-width: 500px;
       margin: auto;
@@ -23,29 +21,22 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-
+    label { display: block; margin-top: 10px; }
     input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
     }
-
     button {
-      margin-top: 15px;
       width: 100%;
       padding: 12px;
+      margin-top: 15px;
       background: #4CAF50;
       color: white;
       border: none;
       font-size: 16px;
       cursor: pointer;
     }
-
     .receipt {
       max-width: 500px;
       margin: 20px auto;
@@ -54,7 +45,6 @@
       background: #fff;
       display: none;
     }
-
     @media print {
       body * { visibility: hidden; }
       .receipt, .receipt * {
@@ -68,19 +58,8 @@
       }
     }
   </style>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
-
-<script>
-  const user = localStorage.getItem("loggedInUser");
-  if (!user) {
-    window.location.href = "index.html";
-  }
-</script>
 
 <h2>Enter Gate Fee</h2>
 
@@ -88,19 +67,15 @@
   <label>Full Name:
     <input type="text" name="fullName" required />
   </label>
-
   <label>Phone Number:
     <input type="tel" name="phone" required />
   </label>
-
   <label>Event Name:
     <input type="text" name="eventName" required />
   </label>
-
   <label>Amount Paid (UGX):
     <input type="number" name="amount" required />
   </label>
-
   <label>Payment Method:
     <select name="paymentMethod">
       <option>Cash</option>
@@ -108,19 +83,15 @@
       <option>Card</option>
     </select>
   </label>
-
   <label>Date of Payment:
     <input type="date" name="paymentDate" required />
   </label>
-
   <label>Signature of Payer:
     <input type="text" name="signature" required />
   </label>
 
   <button type="submit">Submit & Print</button>
 </form>
-
-<button onclick="backupToFirebase()" style="margin: 20px auto; display:block; background: #2196F3;">Sync to Cloud</button>
 
 <div class="receipt" id="receiptBox"></div>
 
@@ -135,17 +106,17 @@
     messagingSenderId: "35497617973",
     appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
   };
-
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-  let counter = savedFees.length + 1;
+  let counter = 1;
+  let savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
+  if (savedFees.length > 0) {
+    counter = savedFees.length + 1;
+  }
 
-  document.getElementById("gateForm").addEventListener("submit", function(e) {
+  document.getElementById("gateForm").addEventListener("submit", async function(e) {
     e.preventDefault();
-
     const data = new FormData(e.target);
     const entry = {
       receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
@@ -156,14 +127,29 @@
       method: data.get("paymentMethod"),
       date: data.get("paymentDate"),
       signature: data.get("signature"),
-      servedBy: localStorage.getItem("loggedInUser")
+      servedBy: localStorage.getItem("loggedInUser") || "unknown"
     };
 
+    // Save locally
     savedFees.push(entry);
     localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
+
+    // Sync to Firebase if online
+    if (navigator.onLine) {
+      try {
+        await db.ref("gateFeeRecords/" + entry.receiptNo).set(entry);
+      } catch (err) {
+        console.warn("Firebase sync failed:", err.message);
+      }
+    }
+
+    // Show receipt
     showReceipt(entry);
+
+    // Reset form
     e.target.reset();
 
+    // Print
     setTimeout(() => {
       window.print();
       bluetoothPrint(entry);
@@ -178,7 +164,7 @@
       <p><strong>Name:</strong> ${entry.name}</p>
       <p><strong>Phone:</strong> ${entry.phone}</p>
       <p><strong>Event:</strong> ${entry.event}</p>
-      <p><strong>Amount Paid:</strong> UGX ${entry.amount}</p>
+      <p><strong>Amount:</strong> UGX ${entry.amount}</p>
       <p><strong>Method:</strong> ${entry.method}</p>
       <p><strong>Date:</strong> ${entry.date}</p>
       <p><strong>Served By:</strong> ${entry.servedBy}</p>
@@ -187,33 +173,19 @@
     box.style.display = "block";
   }
 
-  function backupToFirebase() {
-    if (!navigator.onLine) {
-      alert("You're offline. Connect to the internet to sync.");
-      return;
-    }
-
-    const records = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-
-    records.forEach(record => {
-      db.ref("gateFeeRecords/" + record.receiptNo).set(record);
-    });
-
-    alert("Synced to Firebase successfully!");
-  }
-
   async function bluetoothPrint(entry) {
     const text = `
-      GATE RECEIPT\n
-      Receipt No: ${entry.receiptNo}
-      Name      : ${entry.name}
-      Phone     : ${entry.phone}
-      Event     : ${entry.event}
-      Amount    : UGX ${entry.amount}
-      Method    : ${entry.method}
-      Date      : ${entry.date}
-      Served By : ${entry.servedBy}
-      \n\nThank you!\n\n`;
+GATE RECEIPT
+Receipt No: ${entry.receiptNo}
+Name      : ${entry.name}
+Phone     : ${entry.phone}
+Event     : ${entry.event}
+Amount    : UGX ${entry.amount}
+Method    : ${entry.method}
+Date      : ${entry.date}
+Served By : ${entry.servedBy}
+
+Thank you!\n`;
 
     try {
       const device = await navigator.bluetooth.requestDevice({
@@ -229,16 +201,9 @@
       await characteristic.writeValue(encoder.encode(text));
       alert("Printed via Bluetooth!");
     } catch (err) {
-      console.warn("Bluetooth print skipped or failed:", err.message);
+      console.warn("Bluetooth print failed or skipped:", err.message);
     }
   }
-
-  window.onload = () => {
-    const backup = localStorage.getItem("gateFeeRecords");
-    if (backup) {
-      counter = JSON.parse(backup).length + 1;
-    }
-  };
 </script>
 
 </body>
