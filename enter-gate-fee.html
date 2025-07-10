@@ -71,111 +71,143 @@
 </head>
 <body>
 
-  <script>
-    const user = localStorage.getItem("loggedInUser");
-    if (!user) {
-      window.location.href = "index.html";
-    }
-  </script>
+<script>
+  const user = localStorage.getItem("loggedInUser");
+  if (!user) {
+    window.location.href = "index.html";
+  }
+</script>
 
-  <h2>Enter Gate Fee</h2>
+<h2>Enter Gate Fee</h2>
 
-  <form id="gateForm">
-    <label>Full Name:
-      <input type="text" name="fullName" required />
-    </label>
+<form id="gateForm">
+  <label>Full Name:
+    <input type="text" name="fullName" required />
+  </label>
 
-    <label>Phone Number:
-      <input type="tel" name="phone" required />
-    </label>
+  <label>Phone Number:
+    <input type="tel" name="phone" required />
+  </label>
 
-    <label>Event Name:
-      <input type="text" name="eventName" required />
-    </label>
+  <label>Event Name:
+    <input type="text" name="eventName" required />
+  </label>
 
-    <label>Amount Paid (UGX):
-      <input type="number" name="amount" required />
-    </label>
+  <label>Amount Paid (UGX):
+    <input type="number" name="amount" required />
+  </label>
 
-    <label>Payment Method:
-      <select name="paymentMethod">
-        <option>Cash</option>
-        <option>Mobile Money</option>
-        <option>Card</option>
-      </select>
-    </label>
+  <label>Payment Method:
+    <select name="paymentMethod">
+      <option>Cash</option>
+      <option>Mobile Money</option>
+      <option>Card</option>
+    </select>
+  </label>
 
-    <label>Date of Payment:
-      <input type="date" name="paymentDate" required />
-    </label>
+  <label>Date of Payment:
+    <input type="date" name="paymentDate" required />
+  </label>
 
-    <label>Signature of Payer:
-      <input type="text" name="signature" required />
-    </label>
+  <label>Signature of Payer:
+    <input type="text" name="signature" required />
+  </label>
 
-    <button type="submit">Submit & Print Receipt</button>
-  </form>
+  <button type="submit">Submit & Print</button>
+</form>
 
-  <div class="receipt" id="receiptBox"></div>
+<div class="receipt" id="receiptBox"></div>
 
-  <script>
-    const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-    let counter = savedFees.length + 1;
-
-    document.getElementById("gateForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const data = new FormData(e.target);
-      const entry = {
-        receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
-        name: data.get("fullName"),
-        phone: data.get("phone"),
-        event: data.get("eventName"),
-        amount: data.get("amount"),
-        method: data.get("paymentMethod"),
-        date: data.get("paymentDate"),
-        signature: data.get("signature"),
-        servedBy: localStorage.getItem("loggedInUser")
-      };
-
-      savedFees.push(entry);
-      localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
-      showReceipt(entry);
-      e.target.reset();
-
-      setTimeout(() => {
-        window.print();
-      }, 500);
-    });
-
-    function showReceipt(entry) {
-      const box = document.getElementById("receiptBox");
-      box.innerHTML = `
-        <h3 style="text-align:center;">GATE RECEIPT</h3>
-        <p><strong>Receipt No:</strong> ${entry.receiptNo}</p>
-        <p><strong>Name:</strong> ${entry.name}</p>
-        <p><strong>Phone:</strong> ${entry.phone}</p>
-        <p><strong>Event:</strong> ${entry.event}</p>
-        <p><strong>Amount Paid:</strong> UGX ${entry.amount}</p>
-        <p><strong>Method:</strong> ${entry.method}</p>
-        <p><strong>Date:</strong> ${entry.date}</p>
-        <p><strong>Served By:</strong> ${entry.servedBy}</p>
-        <p style="margin-top:20px;">Thank you for your payment!</p>
-      `;
-      box.style.display = "block";
-    }
-  </script>
 <button onclick="downloadGateCSV()" style="margin: 20px auto; display:block; background:#2196F3;">Download Gate Fee Data</button>
 
 <script>
+  const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
+  let counter = savedFees.length + 1;
+
+  document.getElementById("gateForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+    const entry = {
+      receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
+      name: data.get("fullName"),
+      phone: data.get("phone"),
+      event: data.get("eventName"),
+      amount: data.get("amount"),
+      method: data.get("paymentMethod"),
+      date: data.get("paymentDate"),
+      signature: data.get("signature"),
+      servedBy: localStorage.getItem("loggedInUser")
+    };
+
+    savedFees.push(entry);
+    localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
+    showReceipt(entry);
+    e.target.reset();
+
+    // Print normal
+    setTimeout(() => {
+      window.print();
+      bluetoothPrint(entry); // Try to Bluetooth print too
+    }, 500);
+  });
+
+  function showReceipt(entry) {
+    const box = document.getElementById("receiptBox");
+    box.innerHTML = `
+      <h3 style="text-align:center;">GATE RECEIPT</h3>
+      <p><strong>Receipt No:</strong> ${entry.receiptNo}</p>
+      <p><strong>Name:</strong> ${entry.name}</p>
+      <p><strong>Phone:</strong> ${entry.phone}</p>
+      <p><strong>Event:</strong> ${entry.event}</p>
+      <p><strong>Amount Paid:</strong> UGX ${entry.amount}</p>
+      <p><strong>Method:</strong> ${entry.method}</p>
+      <p><strong>Date:</strong> ${entry.date}</p>
+      <p><strong>Served By:</strong> ${entry.servedBy}</p>
+      <p style="margin-top:20px;">Thank you for your payment!</p>
+    `;
+    box.style.display = "block";
+  }
+
+  async function bluetoothPrint(entry) {
+    const text = `
+      GATE RECEIPT\n
+      Receipt No: ${entry.receiptNo}
+      Name      : ${entry.name}
+      Phone     : ${entry.phone}
+      Event     : ${entry.event}
+      Amount    : UGX ${entry.amount}
+      Method    : ${entry.method}
+      Date      : ${entry.date}
+      Served By : ${entry.servedBy}
+      \n\nThank you!\n\n`;
+
+    try {
+      const device = await navigator.bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: [0x1101]
+      });
+
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService(0x1101);
+      const characteristic = await service.getCharacteristic(0x2a56);
+
+      const encoder = new TextEncoder();
+      await characteristic.writeValue(encoder.encode(text));
+      alert("Printed via Bluetooth!");
+
+    } catch (err) {
+      console.warn("Bluetooth print skipped or failed:", err.message);
+    }
+  }
+
   function downloadGateCSV() {
     const records = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-
     if (!records.length) {
       alert("No data to download.");
       return;
     }
-    
+
     let csv = "Receipt No,Name,Phone,Event,Amount,Method,Date,Served By\n";
     records.forEach(r => {
       csv += `${r.receiptNo},${r.name},${r.phone},${r.event},${r.amount},${r.method},${r.date},${r.servedBy}\n`;
@@ -188,44 +220,13 @@
     a.download = "gate_fee_records.csv";
     a.click();
   }
-</script>
-<button onclick="bluetoothPrint()" style="margin: 20px auto; display:block; background:#FF9800;">Print via Bluetooth</button>
 
-<script>
-  async function bluetoothPrint() {
-    const last = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]").slice(-1)[0];
-    if (!last) return alert("No recent receipt found!");
-
-    const text = `
-      GATE RECEIPT\n
-      Receipt No: ${last.receiptNo}
-      Name      : ${last.name}
-      Phone     : ${last.phone}
-      Event     : ${last.event}
-      Amount    : UGX ${last.amount}
-      Method    : ${last.method}
-      Date      : ${last.date}
-      Served By : ${last.servedBy}
-      \n\nThank you!\n\n`;
-
-    try {
-      const device = await navigator.bluetooth.requestDevice({
-        acceptAllDevices: true,
-        optionalServices: [0x1101]
-      });
-
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(0x1101);
-      const characteristic = await service.getCharacteristic(0x2a56); // Common for printing
-
-      const encoder = new TextEncoder();
-      await characteristic.writeValue(encoder.encode(text));
-      alert("Printed via Bluetooth!");
-
-    } catch (err) {
-      alert("Printing failed or canceled.\n" + err.message);
+  window.onload = () => {
+    const backup = localStorage.getItem("gateFeeRecords");
+    if (backup) {
+      counter = JSON.parse(backup).length + 1;
     }
-  }
+  };
 </script>
 
 </body>
