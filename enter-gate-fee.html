@@ -68,6 +68,10 @@
       }
     }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -116,9 +120,26 @@
   <button type="submit">Submit & Print</button>
 </form>
 
+<button onclick="backupToFirebase()" style="margin: 20px auto; display:block; background: #2196F3;">Sync to Cloud</button>
+
 <div class="receipt" id="receiptBox"></div>
 
 <script>
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
   const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
   let counter = savedFees.length + 1;
 
@@ -143,7 +164,6 @@
     showReceipt(entry);
     e.target.reset();
 
-    // Print receipt and attempt Bluetooth
     setTimeout(() => {
       window.print();
       bluetoothPrint(entry);
@@ -165,6 +185,21 @@
       <p style="margin-top:20px;">Thank you for your payment!</p>
     `;
     box.style.display = "block";
+  }
+
+  function backupToFirebase() {
+    if (!navigator.onLine) {
+      alert("You're offline. Connect to the internet to sync.");
+      return;
+    }
+
+    const records = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
+
+    records.forEach(record => {
+      db.ref("gateFeeRecords/" + record.receiptNo).set(record);
+    });
+
+    alert("Synced to Firebase successfully!");
   }
 
   async function bluetoothPrint(entry) {
@@ -193,7 +228,6 @@
       const encoder = new TextEncoder();
       await characteristic.writeValue(encoder.encode(text));
       alert("Printed via Bluetooth!");
-
     } catch (err) {
       console.warn("Bluetooth print skipped or failed:", err.message);
     }
