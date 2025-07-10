@@ -1,129 +1,218 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Gate Fee System</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-    }
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-    }
-    button {
-      margin-top: 15px;
-      padding: 10px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      width: 100%;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #45a049;
-    }
-    .link {
-      margin-top: 10px;
-      text-align: center;
-    }
-    .link a {
-      color: #007BFF;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-    #resetForm {
-      display: none;
-      margin-top: 30px;
-      border-top: 1px solid #ccc;
-      padding-top: 20px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login - Gate Fee System</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 350px;
+    margin: 60px auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+  }
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  label {
+    display: block;
+    margin-top: 10px;
+  }
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    font-size: 16px;
+    box-sizing: border-box;
+  }
+  button {
+    margin-top: 20px;
+    width: 100%;
+    background: #2196F3;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  button:hover {
+    background: #0b7dda;
+  }
+  #forgotPasswordLink {
+    margin-top: 15px;
+    text-align: right;
+    color: #2196F3;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+  }
+  #statusMsg {
+    margin-top: 15px;
+    color: red;
+    text-align: center;
+  }
+  /* Modal styles */
+  #modalOverlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 9999;
+  }
+  #modal {
+    background: white;
+    width: 90%;
+    max-width: 400px;
+    margin: 100px auto;
+    padding: 20px;
+    border-radius: 8px;
+    position: relative;
+  }
+  #modal h3 {
+    margin-top: 0;
+  }
+  #modal label {
+    margin-top: 10px;
+  }
+  #modal input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+  }
+  #modal button {
+    width: 100%;
+    margin-top: 15px;
+  }
+  #modalClose {
+    position: absolute;
+    top: 10px; right: 15px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+  }
+  #modalStatus {
+    margin-top: 10px;
+    font-size: 14px;
+    color: green;
+    text-align: center;
+  }
+</style>
 </head>
 <body>
 
-  <h2>Login</h2>
-
+<h2>Login</h2>
+<form id="loginForm">
   <label>Username:
-    <input type="text" id="username" />
+    <input type="text" id="username" required />
   </label>
   <label>Password:
-    <input type="password" id="password" />
+    <input type="password" id="password" required />
   </label>
-  <button onclick="login()">Login</button>
+  <button type="submit">Login</button>
+</form>
+<div id="forgotPasswordLink">Forgot Password?</div>
+<div id="statusMsg"></div>
 
-  <div class="link">
-    <a onclick="showReset()">Forgot Password?</a>
-  </div>
-
-  <div id="resetForm">
+<!-- Modal -->
+<div id="modalOverlay">
+  <div id="modal">
+    <span id="modalClose">&times;</span>
     <h3>Reset Password</h3>
-    <label>Username: <input type="text" id="resetUsername" /></label>
-    <label>Email/Phone: <input type="text" id="resetContact" /></label>
-    <label>New Password: <input type="password" id="resetPassword" /></label>
-    <button onclick="resetPassword()">Reset Password</button>
+    <form id="resetForm">
+      <label>Username:
+        <input type="text" id="resetUsername" required />
+      </label>
+      <label>Phone or Email:
+        <input type="text" id="resetContact" required placeholder="Enter registered phone or email" />
+      </label>
+      <label>New Password:
+        <input type="password" id="newPassword" required />
+      </label>
+      <button type="submit">Reset Password</button>
+    </form>
+    <div id="modalStatus"></div>
   </div>
+</div>
 
-  <script>
-    function getUsers() {
-      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+<script>
+  const users = JSON.parse(localStorage.getItem("users") || "{}");
+  const loginForm = document.getElementById("loginForm");
+  const statusMsg = document.getElementById("statusMsg");
+
+  loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!users[username]) {
+      statusMsg.textContent = "User not found.";
+      return;
     }
-
-    function login() {
-      const uname = document.getElementById("username").value.trim();
-      const pword = document.getElementById("password").value;
-      const users = getUsers();
-
-      if (users[uname] && users[uname].password === pword) {
-        localStorage.setItem("loggedInUser", uname);
-        alert("Login successful!");
-        window.location.href = "enter-gate-fee.html";
-      } else {
-        alert("Invalid username or password");
-      }
+    if (users[username].password !== password) {
+      statusMsg.textContent = "Incorrect password.";
+      return;
     }
+    // Success
+    localStorage.setItem("loggedInUser", username);
+    statusMsg.style.color = "green";
+    statusMsg.textContent = "Login successful! Redirecting...";
+    setTimeout(() => {
+      window.location.href = "home.html"; // Change to your home page URL
+    }, 1000);
+  });
 
-    function resetPassword() {
-      const uname = document.getElementById("resetUsername").value.trim();
-      const contact = document.getElementById("resetContact").value.trim();
-      const newPass = document.getElementById("resetPassword").value;
-      const users = getUsers();
+  // Forgot Password modal handlers
+  const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+  const modalOverlay = document.getElementById("modalOverlay");
+  const modalClose = document.getElementById("modalClose");
+  const resetForm = document.getElementById("resetForm");
+  const modalStatus = document.getElementById("modalStatus");
 
-      if (users[uname] && users[uname].contact === contact) {
-        users[uname].password = newPass;
-        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-        alert("Password updated successfully!");
-        document.getElementById("resetForm").style.display = "none";
-      } else {
-        alert("User not found or contact does not match");
-      }
+  forgotPasswordLink.onclick = () => {
+    modalOverlay.style.display = "block";
+    modalStatus.textContent = "";
+    resetForm.reset();
+  };
+  modalClose.onclick = () => {
+    modalOverlay.style.display = "none";
+  };
+  window.onclick = e => {
+    if (e.target === modalOverlay) {
+      modalOverlay.style.display = "none";
     }
+  };
 
-    function showReset() {
-      document.getElementById("resetForm").style.display = "block";
+  resetForm.addEventListener("submit", e => {
+    e.preventDefault();
+    const username = document.getElementById("resetUsername").value.trim();
+    const contact = document.getElementById("resetContact").value.trim().toLowerCase();
+    const newPassword = document.getElementById("newPassword").value.trim();
+
+    if (!users[username]) {
+      modalStatus.style.color = "red";
+      modalStatus.textContent = "User not found.";
+      return;
     }
-
-    // Initialize default admin
-    window.onload = () => {
-      const users = getUsers();
-      if (!users.admin) {
-        users.admin = { password: "admin123", contact: "admin@example.com" };
-        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-      }
-    };
-  </script>
+    const user = users[username];
+    if (
+      user.phone.toLowerCase() !== contact &&
+      user.email.toLowerCase() !== contact
+    ) {
+      modalStatus.style.color = "red";
+      modalStatus.textContent = "Phone or Email does not match our records.";
+      return;
+    }
+    // Update password
+    users[username].password = newPassword;
+    localStorage.setItem("users", JSON.stringify(users));
+    modalStatus.style.color = "green";
+    modalStatus.textContent = "Password reset successful! You can now login.";
+    resetForm.reset();
+  });
+</script>
 
 </body>
 </html>
