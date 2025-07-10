@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#4CAF50",
-  "description": "A simple gate fee collection system.",
+  "description": "A mobile-friendly app for managing gate fee payments and supporter registrations.",
   "icons": [
     {
       "src": "icons/icon-192.png",
