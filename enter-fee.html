@@ -1,60 +1,102 @@
-<script>
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if (!loggedInUser) {
-    window.location.href = "login.html";
-  }
-</script>
 <!DOCTYPE html>
-<html>
-<head><meta charset='UTF-8'><title>Enter Fee</title></head>
-<body>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Enter Gate Fee</title>
-  <link rel="stylesheet" href="style.css">
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 20px auto;
       padding: 20px;
+      background: #f0f2f5;
     }
+
+    h2 {
+      text-align: center;
+    }
+
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 10px;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
     }
+
     button {
-      margin-top: 20px;
-      padding: 12px;
+      margin-top: 15px;
       width: 100%;
-      background-color: #4CAF50;
-      border: none;
+      padding: 12px;
+      background: #4CAF50;
       color: white;
+      border: none;
       font-size: 16px;
+      cursor: pointer;
     }
+
     .receipt {
-      border: 1px dashed #000;
-      padding: 15px;
-      margin-top: 20px;
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 2px dashed #000;
+      background: #fff;
+      display: none;
+    }
+
+    @media print {
+      body * { visibility: hidden; }
+      .receipt, .receipt * {
+        visibility: visible;
+      }
+      .receipt {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h2>Gate Fee Payment</h2>
+  <script>
+    const user = localStorage.getItem("loggedInUser");
+    if (!user) {
+      window.location.href = "index.html";
+    }
+  </script>
 
-  <form id="feeForm">
-    <label>Full Name: <input type="text" name="fullName" required /></label>
-    <label>Phone Number: <input type="tel" name="phone" required /></label>
-    <label>Event Name: <input type="text" name="eventName" required /></label>
-    <label>Amount Paid (UGX): <input type="number" name="amount" required /></label>
+  <h2>Enter Gate Fee</h2>
+
+  <form id="gateForm">
+    <label>Full Name:
+      <input type="text" name="fullName" required />
+    </label>
+
+    <label>Phone Number:
+      <input type="tel" name="phone" required />
+    </label>
+
+    <label>Event Name:
+      <input type="text" name="eventName" required />
+    </label>
+
+    <label>Amount Paid (UGX):
+      <input type="number" name="amount" required />
+    </label>
+
     <label>Payment Method:
       <select name="paymentMethod">
         <option>Cash</option>
@@ -62,85 +104,67 @@
         <option>Card</option>
       </select>
     </label>
-    <label>Date of Payment: <input type="date" name="paymentDate" required /></label>
-    <label>Signature of Payer: <input type="text" name="signature" required /></label>
-    <button type="submit">Submit & Print</button>
+
+    <label>Date of Payment:
+      <input type="date" name="paymentDate" required />
+    </label>
+
+    <label>Signature of Payer:
+      <input type="text" name="signature" required />
+    </label>
+
+    <button type="submit">Submit & Print Receipt</button>
   </form>
 
-  <div id="receipt" class="receipt" style="display:none;"></div>
+  <div class="receipt" id="receiptBox"></div>
 
   <script>
-    document.getElementById("feeForm").addEventListener("submit", function(e) {
+    const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
+    let counter = savedFees.length + 1;
+
+    document.getElementById("gateForm").addEventListener("submit", function(e) {
       e.preventDefault();
+
       const data = new FormData(e.target);
+      const entry = {
+        receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
+        name: data.get("fullName"),
+        phone: data.get("phone"),
+        event: data.get("eventName"),
+        amount: data.get("amount"),
+        method: data.get("paymentMethod"),
+        date: data.get("paymentDate"),
+        signature: data.get("signature"),
+        servedBy: localStorage.getItem("loggedInUser")
+      };
 
-      const receiptHTML = `
-        <h3>GATE RECEIPT</h3>
-        <p><strong>Name:</strong> ${data.get("fullName")}</p>
-        <p><strong>Phone:</strong> ${data.get("phone")}</p>
-        <p><strong>Event:</strong> ${data.get("eventName")}</p>
-        <p><strong>Amount:</strong> UGX ${data.get("amount")}</p>
-        <p><strong>Method:</strong> ${data.get("paymentMethod")}</p>
-        <p><strong>Date:</strong> ${data.get("paymentDate")}</p>
-        <p><strong>Signature:</strong> ${data.get("signature")}</p>
-        <p><strong>Served By:</strong> admin</p>
-      `;
+      savedFees.push(entry);
+      localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
+      showReceipt(entry);
+      e.target.reset();
 
-      const receiptDiv = document.getElementById("receipt");
-      receiptDiv.innerHTML = receiptHTML;
-      receiptDiv.style.display = "block";
-
-      // Optional: Call Bluetooth printer function here later
-      alert("Data captured. Receipt ready to print.");
+      setTimeout(() => {
+        window.print();
+      }, 500);
     });
-  </script>
 
-</body>
-</html>
-
-<!-- form elements go here -->
-
-<script>
-  // ... (existing JS logic) ...
-
-  async function bluetoothPrint(entry) {
-    const text = `
----------------------------
-      GATE RECEIPT
----------------------------
-Receipt No: ${entry.receiptNo}
-Name: ${entry.name}
-Phone: ${entry.phone}
-Event: ${entry.event}
-Amount: UGX ${entry.amount}
-Method: ${entry.method}
-Date: ${entry.date}
-Served By: ${entry.servedBy}
----------------------------
-     Thank you!
-`;
-
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text + "\n\n\n");
-
-    try {
-      const device = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'MPT' }, { services: ['0000ffe0-0000-1000-8000-00805f9b34fb'] }],
-        optionalServices: ['battery_service']
-      });
-
-      const server = await device.gatt.connect();
-      const service = await server.getPrimaryService('0000ffe0-0000-1000-8000-00805f9b34fb');
-      const characteristic = await service.getCharacteristic('0000ffe1-0000-1000-8000-00805f9b34fb');
-      await characteristic.writeValue(data);
-      alert("Receipt sent to printer!");
-
-    } catch (error) {
-      alert("Bluetooth printing failed: " + error);
-      console.error(error);
+    function showReceipt(entry) {
+      const box = document.getElementById("receiptBox");
+      box.innerHTML = `
+        <h3 style="text-align:center;">GATE RECEIPT</h3>
+        <p><strong>Receipt No:</strong> ${entry.receiptNo}</p>
+        <p><strong>Name:</strong> ${entry.name}</p>
+        <p><strong>Phone:</strong> ${entry.phone}</p>
+        <p><strong>Event:</strong> ${entry.event}</p>
+        <p><strong>Amount Paid:</strong> UGX ${entry.amount}</p>
+        <p><strong>Method:</strong> ${entry.method}</p>
+        <p><strong>Date:</strong> ${entry.date}</p>
+        <p><strong>Served By:</strong> ${entry.servedBy}</p>
+        <p style="margin-top:20px;">Thank you for your payment!</p>
+      `;
+      box.style.display = "block";
     }
-  }
-</script>
+  </script>
 
 </body>
 </html>
