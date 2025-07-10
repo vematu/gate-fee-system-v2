@@ -7,22 +7,20 @@ const urlsToCache = [
   "./add-user.html",
   "./enter-fee.html",
   "./view-data.html",
-  "./manifest.json",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png"
+  "./manifest.json"
 ];
 
-self.addEventListener("install", function (event) {
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
+    caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(urlsToCache);
     })
   );
 });
 
-self.addEventListener("fetch", function (event) {
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(function (response) {
+    caches.match(event.request).then(response => {
       return response || fetch(event.request);
     })
   );
