@@ -9,8 +9,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f2f5;
       padding: 20px;
+      background: #f0f2f5;
     }
     h2 { text-align: center; }
     form {
@@ -144,7 +144,6 @@
     e.target.reset();
 
     setTimeout(() => {
-      window.print();
       bluetoothPrint(entry);
     }, 500);
   });
@@ -172,12 +171,12 @@
     try {
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: [0x1101]
+        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"]
       });
 
       const server = await device.gatt.connect();
-      const service = await server.getPrimaryService(0x1101);
-      const characteristic = await service.getCharacteristic(0x2a56);
+      const service = await server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb");
+      const characteristic = await service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb");
 
       const encoder = new TextEncoder();
       await characteristic.writeValue(encoder.encode(text));
