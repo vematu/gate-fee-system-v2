@@ -1,21 +1,72 @@
-{
-  "name": "Gate Fee System",
-  "short_name": "GateFee",
-  "start_url": "./index.html",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4CAF50",
-  "description": "A mobile-friendly app for managing gate fee payments and supporter registrations.",
-  "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gate Fee System</title>
+
+  <!-- PWA: Manifest & Theme -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4CAF50" />
+
+  <!-- PWA: Register service worker -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker
+          .register("sw.js")
+          .then(reg => console.log("✅ Service Worker registered"))
+          .catch(err => console.error("❌ Service Worker failed:", err));
+      });
     }
-  ]
-}
+  </script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      padding: 40px;
+      text-align: center;
+    }
+
+    h1 {
+      color: #4CAF50;
+    }
+
+    .btn {
+      margin: 20px auto;
+      display: block;
+      background: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      text-decoration: none;
+      width: 200px;
+    }
+
+    .btn:hover {
+      background: #45a049;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 13px;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Welcome to Gate Fee System</h1>
+  <p>Please login to access the system.</p>
+
+  <a class="btn" href="login.html">Login</a>
+
+  <div class="footer">
+    Powered by Gate Fee System | Installable App
+  </div>
+
+</body>
+</html>
