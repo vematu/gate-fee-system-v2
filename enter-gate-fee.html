@@ -118,8 +118,6 @@
 
 <div class="receipt" id="receiptBox"></div>
 
-<button onclick="downloadGateCSV()" style="margin: 20px auto; display:block; background:#2196F3;">Download Gate Fee Data</button>
-
 <script>
   const savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
   let counter = savedFees.length + 1;
@@ -145,10 +143,10 @@
     showReceipt(entry);
     e.target.reset();
 
-    // Print normal
+    // Print receipt and attempt Bluetooth
     setTimeout(() => {
       window.print();
-      bluetoothPrint(entry); // Try to Bluetooth print too
+      bluetoothPrint(entry);
     }, 500);
   });
 
@@ -199,26 +197,6 @@
     } catch (err) {
       console.warn("Bluetooth print skipped or failed:", err.message);
     }
-  }
-
-  function downloadGateCSV() {
-    const records = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-    if (!records.length) {
-      alert("No data to download.");
-      return;
-    }
-
-    let csv = "Receipt No,Name,Phone,Event,Amount,Method,Date,Served By\n";
-    records.forEach(r => {
-      csv += `${r.receiptNo},${r.name},${r.phone},${r.event},${r.amount},${r.method},${r.date},${r.servedBy}\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "gate_fee_records.csv";
-    a.click();
   }
 
   window.onload = () => {
