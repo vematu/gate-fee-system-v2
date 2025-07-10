@@ -1,96 +1,154 @@
-<script>
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if (!loggedInUser) {
-    window.location.href = "login.html";
-  }
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register Supporter</title>
-  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
-      margin: 20px auto;
       padding: 20px;
+      background: #f2f2f2;
     }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 10px;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
-    }
-    button {
-      margin-top: 20px;
-      padding: 12px;
-      width: 100%;
-      background-color: #4CAF50;
-      border: none;
-      color: white;
       font-size: 16px;
     }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #388E3C;
+    }
+
     .success {
-      margin-top: 15px;
+      text-align: center;
       color: green;
-      font-weight: bold;
+      margin-top: 15px;
     }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <h2>Register Supporter</h2>
+<h2>Register Supporter</h2>
 
-  <form id="supporterForm">
-    <label>Full Name: <input type="text" name="name" required /></label>
-    <label>Gender:
-      <select name="gender" required>
-        <option value="">--Select Gender--</option>
-        <option>Male</option>
-        <option>Female</option>
-      </select>
-    </label>
-    <label>Date of Birth: <input type="date" name="dob" required /></label>
-    <label>Phone Number: <input type="tel" name="phone" required /></label>
-    <label>Nationality: <input type="text" name="nationality" required /></label>
-    <label>District: <input type="text" name="district" required /></label>
-    <label>County: <input type="text" name="county" required /></label>
-    <label>Sub-county: <input type="text" name="subcounty" required /></label>
-    <label>Parish: <input type="text" name="parish" required /></label>
-    <label>Village: <input type="text" name="village" required /></label>
-    <label>Occupation: <input type="text" name="occupation" required /></label>
-    <label>ID Number (e.g., NIN): <input type="text" name="idNumber" required /></label>
+<form id="supporterForm">
+  <label>Full Name:
+    <input type="text" name="fullName" required />
+  </label>
 
-    <button type="submit">Save Supporter</button>
-  </form>
+  <label>Phone Number:
+    <input type="tel" name="phone" required />
+  </label>
 
-  <p id="successMessage" class="success" style="display: none;">Supporter data saved successfully!</p>
+  <label>Gender:
+    <select name="gender" required>
+      <option value="">--Select--</option>
+      <option>Male</option>
+      <option>Female</option>
+    </select>
+  </label>
 
-  <script>
-    document.getElementById("supporterForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const formData = new FormData(e.target);
-      const supporter = {};
+  <label>Age:
+    <input type="number" name="age" required />
+  </label>
 
-      formData.forEach((value, key) => {
-        supporter[key] = value;
+  <label>Location:
+    <input type="text" name="location" required />
+  </label>
+
+  <label>Membership Type:
+    <select name="membership" required>
+      <option value="">--Select--</option>
+      <option>Regular</option>
+      <option>Premium</option>
+      <option>Honorary</option>
+    </select>
+  </label>
+
+  <button type="submit">Register</button>
+  <div class="success" id="successMsg"></div>
+</form>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const localData = JSON.parse(localStorage.getItem("supporterRecords") || "[]");
+
+  document.getElementById("supporterForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+    const entry = {
+      id: "SPT-" + Date.now(),
+      name: data.get("fullName"),
+      phone: data.get("phone"),
+      gender: data.get("gender"),
+      age: data.get("age"),
+      location: data.get("location"),
+      membership: data.get("membership"),
+      createdBy: localStorage.getItem("loggedInUser") || "unknown"
+    };
+
+    localData.push(entry);
+    localStorage.setItem("supporterRecords", JSON.stringify(localData));
+
+    db.ref("supporterRecords/" + entry.id).set(entry)
+      .then(() => {
+        document.getElementById("successMsg").textContent = "Supporter registered and synced!";
+        e.target.reset();
+        setTimeout(() => document.getElementById("successMsg").textContent = "", 3000);
+      })
+      .catch(err => {
+        alert("Saved locally. Sync failed: " + err.message);
       });
-
-      // Save supporter to local storage
-      const supporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
-      supporters.push(supporter);
-      localStorage.setItem("supportersData", JSON.stringify(supporters));
-
-      document.getElementById("successMessage").style.display = "block";
-      e.target.reset();
-    });
-  </script>
+  });
+</script>
 
 </body>
 </html>
