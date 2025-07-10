@@ -96,7 +96,6 @@
 <div class="receipt" id="receiptBox"></div>
 
 <script>
-  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
     authDomain: "gate-fee-system.firebaseapp.com",
@@ -130,11 +129,9 @@
       servedBy: localStorage.getItem("loggedInUser") || "unknown"
     };
 
-    // Save locally
     savedFees.push(entry);
     localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
 
-    // Sync to Firebase if online
     if (navigator.onLine) {
       try {
         await db.ref("gateFeeRecords/" + entry.receiptNo).set(entry);
@@ -143,13 +140,9 @@
       }
     }
 
-    // Show receipt
     showReceipt(entry);
-
-    // Reset form
     e.target.reset();
 
-    // Print
     setTimeout(() => {
       window.print();
       bluetoothPrint(entry);
@@ -174,18 +167,7 @@
   }
 
   async function bluetoothPrint(entry) {
-    const text = `
-GATE RECEIPT
-Receipt No: ${entry.receiptNo}
-Name      : ${entry.name}
-Phone     : ${entry.phone}
-Event     : ${entry.event}
-Amount    : UGX ${entry.amount}
-Method    : ${entry.method}
-Date      : ${entry.date}
-Served By : ${entry.servedBy}
-
-Thank you!\n`;
+    const text = `\nGATE RECEIPT\nReceipt No: ${entry.receiptNo}\nName: ${entry.name}\nPhone: ${entry.phone}\nEvent: ${entry.event}\nAmount: UGX ${entry.amount}\nMethod: ${entry.method}\nDate: ${entry.date}\nServed By: ${entry.servedBy}\n\nThank you!\n`;
 
     try {
       const device = await navigator.bluetooth.requestDevice({
