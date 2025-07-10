@@ -1,117 +1,110 @@
-<script>
-  const loggedInUser = localStorage.getItem("loggedInUser");
-  if (!loggedInUser) {
-    window.location.href = "login.html";
-  }
-</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Add New User - Gate Fee System</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add User - Gate Fee System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 500px;
+      max-width: 400px;
       margin: 40px auto;
+      background: #f9f9f9;
       padding: 20px;
+      border-radius: 10px;
     }
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
     label {
       display: block;
-      margin-top: 15px;
+      margin-top: 10px;
     }
     input {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
     }
     button {
-      margin-top: 15px;
-      padding: 10px;
+      margin-top: 20px;
+      width: 100%;
       background: #4CAF50;
       color: white;
       border: none;
-      width: 100%;
+      padding: 12px;
+      font-size: 16px;
       cursor: pointer;
     }
     button:hover {
-      background: #45a049;
+      background: #388E3C;
     }
-    #status {
-      margin-top: 10px;
-      font-weight: bold;
+    #statusMsg {
+      margin-top: 15px;
+      text-align: center;
+      color: green;
     }
   </style>
 </head>
 <body>
 
-  <h2>Add New User</h2>
+<h2>Add New User</h2>
 
-  <div id="adminOnly">
-    <label>New Username: <input type="text" id="newUsername" /></label>
-    <label>Password: <input type="password" id="newPassword" /></label>
-    <label>Email or Phone: <input type="text" id="newContact" /></label>
-    <button onclick="createUser()">Create User</button>
-    <p id="status"></p>
-    <button onclick="logout()">Logout</button>
-  </div>
+<form id="addUserForm">
+  <label>Username:
+    <input type="text" id="username" required />
+  </label>
+  <label>Password:
+    <input type="password" id="password" required />
+  </label>
+  <label>Phone Number:
+    <input type="tel" id="phone" required />
+  </label>
+  <label>Email Address:
+    <input type="email" id="email" required />
+  </label>
+  <button type="submit">Add User</button>
+  <div id="statusMsg"></div>
+</form>
 
-  <script>
-    function getUsers() {
-      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+<script>
+  // Simple localStorage users management with phone/email
+  let users = JSON.parse(localStorage.getItem("users") || "{}");
+
+  // For demo: assume current user is admin (add your own auth check here)
+  const currentUser = localStorage.getItem("loggedInUser") || "admin";
+
+  if (currentUser !== "admin") {
+    alert("Access denied. Admin only.");
+    // redirect or disable form here if you want
+  }
+
+  document.getElementById("addUserForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+    const email = document.getElementById("email").value.trim();
+
+    if (users[username]) {
+      document.getElementById("statusMsg").style.color = "red";
+      document.getElementById("statusMsg").textContent = "User already exists.";
+      return;
     }
 
-    function saveUsers(users) {
-      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-    }
+    // Save user
+    users[username] = { password, phone, email };
+    localStorage.setItem("users", JSON.stringify(users));
 
-    function createUser() {
-      const uname = document.getElementById("newUsername").value.trim();
-      const pword = document.getElementById("newPassword").value.trim();
-      const contact = document.getElementById("newContact").value.trim();
-      const users = getUsers();
+    document.getElementById("statusMsg").style.color = "green";
+    document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
 
-      if (!uname || !pword || !contact) {
-        document.getElementById("status").textContent = "All fields are required.";
-        return;
-      }
-
-      if (users[uname]) {
-        document.getElementById("status").textContent = "User already exists.";
-        return;
-      }
-
-      users[uname] = {
-        password: pword,
-        contact: contact
-      };
-      saveUsers(users);
-      document.getElementById("status").textContent = `User '${uname}' added successfully!`;
-
-      // Clear inputs
-      document.getElementById("newUsername").value = "";
-      document.getElementById("newPassword").value = "";
-      document.getElementById("newContact").value = "";
-    }
-
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      window.location.href = "login.html";
-    }
-
-    // Allow only admin to access this page
-    window.onload = () => {
-      const loggedInUser = localStorage.getItem("loggedInUser");
-      if (loggedInUser !== "admin") {
-        alert("Access denied. Only admin can add users.");
-        window.location.href = "login.html";
-      }
-    };
-  </script>
+    // Clear form
+    e.target.reset();
+  });
+</script>
 
 </body>
 </html>
