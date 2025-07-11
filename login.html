@@ -2,142 +2,127 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - Gate Fee System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f5f5f5;
-      text-align: center;
-      padding: 40px;
-    }
-
-    h1 {
-      color: #4CAF50;
-    }
-
-    form {
-      max-width: 400px;
-      margin: 20px auto;
-      background: white;
+      max-width: 500px;
+      margin: 40px auto;
       padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-
+    h2 {
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
     input {
       width: 100%;
       padding: 10px;
-      margin-top: 10px;
-      margin-bottom: 15px;
+      margin-top: 5px;
     }
-
     button {
-      width: 100%;
-      padding: 12px;
+      margin-top: 15px;
+      padding: 10px;
       background: #4CAF50;
       color: white;
       border: none;
-      font-size: 16px;
+      width: 100%;
       cursor: pointer;
     }
-
-    .forgot {
+    button:hover {
+      background: #45a049;
+    }
+    .link {
       margin-top: 10px;
-      font-size: 14px;
-      color: #555;
+      text-align: center;
+    }
+    .link a {
+      color: #007BFF;
       cursor: pointer;
-    }
-
-    .forgot:hover {
       text-decoration: underline;
-      color: #000;
     }
-
-    .error {
-      color: red;
-      font-size: 14px;
+    #resetForm {
+      display: none;
+      margin-top: 30px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
     }
   </style>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
-  <h1>KAKUMIRO JUNIOR FC</h1>
-  <p>Login to access the Gate Fee System</p>
+  <h2>Login</h2>
 
-  <form id="loginForm">
-    <input type="text" name="username" placeholder="Username" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-    <p class="forgot" onclick="triggerReset()">Forgot Password?</p>
-    <div class="error" id="errorMsg"></div>
-  </form>
+  <label>Username:
+    <input type="text" id="username" />
+  </label>
+  <label>Password:
+    <input type="password" id="password" />
+  </label>
+  <button onclick="login()">Login</button>
+
+  <div class="link">
+    <a onclick="showReset()">Forgot Password?</a>
+  </div>
+
+  <div id="resetForm">
+    <h3>Reset Password</h3>
+    <label>Username: <input type="text" id="resetUsername" /></label>
+    <label>Email/Phone: <input type="text" id="resetContact" /></label>
+    <label>New Password: <input type="password" id="resetPassword" /></label>
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-      authDomain: "gate-fee-system.firebaseapp.com",
-      databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-      projectId: "gate-fee-system",
-      storageBucket: "gate-fee-system.appspot.com",
-      messagingSenderId: "35497617973",
-      appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    document.getElementById("loginForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const form = new FormData(e.target);
-      const username = form.get("username");
-      const password = form.get("password");
-
-      db.ref("users/" + username).once("value").then(snapshot => {
-        if (!snapshot.exists()) {
-          return document.getElementById("errorMsg").textContent = "User not found!";
-        }
-
-        const userData = snapshot.val();
-        if (userData.password !== password) {
-          return document.getElementById("errorMsg").textContent = "Invalid password!";
-        }
-
-        // Save session
-        localStorage.setItem("loggedInUser", username);
-        localStorage.setItem("userContact", userData.contact || "");
-
-        window.location.href = "home.html"; // redirect to homepage
-      });
-    });
-
-    function triggerReset() {
-      const username = prompt("Enter your username:");
-      if (!username) return;
-
-      db.ref("users/" + username).once("value").then(snapshot => {
-        if (!snapshot.exists()) {
-          return alert("User not found!");
-        }
-
-        const contact = snapshot.val().contact || "";
-        const verify = prompt("Enter your registered phone or email:");
-        if (verify !== contact) {
-          return alert("Verification failed. Contact does not match.");
-        }
-
-        const newPass = prompt("Enter your new password:");
-        if (!newPass || newPass.length < 4) {
-          return alert("Password too short.");
-        }
-
-        db.ref("users/" + username).update({ password: newPass });
-        alert("Password reset successfully. You can now log in.");
-      });
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
     }
+
+    function login() {
+      const uname = document.getElementById("username").value.trim();
+      const pword = document.getElementById("password").value;
+      const users = getUsers();
+
+      if (users[uname] && users[uname].password === pword) {
+        localStorage.setItem("loggedInUser", uname);
+        alert("Login successful!");
+        window.location.href = "enter-gate-fee.html";
+      } else {
+        alert("Invalid username or password");
+      }
+    }
+
+    function resetPassword() {
+      const uname = document.getElementById("resetUsername").value.trim();
+      const contact = document.getElementById("resetContact").value.trim();
+      const newPass = document.getElementById("resetPassword").value;
+      const users = getUsers();
+
+      if (users[uname] && users[uname].contact === contact) {
+        users[uname].password = newPass;
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+        alert("Password updated successfully!");
+        document.getElementById("resetForm").style.display = "none";
+      } else {
+        alert("User not found or contact does not match");
+      }
+    }
+
+    function showReset() {
+      document.getElementById("resetForm").style.display = "block";
+    }
+
+    // Initialize default admin
+    window.onload = () => {
+      const users = getUsers();
+      if (!users.admin) {
+        users.admin = { password: "admin123", contact: "admin@example.com" };
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      }
+    };
   </script>
 
 </body>
