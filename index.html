@@ -7,106 +7,108 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 50px 20px;
     }
-    .container {
+    .login-container {
+      max-width: 400px;
+      margin: auto;
       background: white;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      max-width: 400px;
-      width: 100%;
-    }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo img {
-      width: 80px;
-      height: auto;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     input {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
-      box-sizing: border-box;
+      margin: 10px 0;
+      font-size: 16px;
     }
     button {
       width: 100%;
       padding: 12px;
       background: #4CAF50;
-      color: white;
       border: none;
+      color: white;
       font-size: 16px;
-      margin-top: 20px;
       cursor: pointer;
     }
-    .error {
-      color: red;
+    button:hover {
+      background: #45a049;
+    }
+    .forgot {
       margin-top: 10px;
-      text-align: center;
+      color: blue;
+      cursor: pointer;
+      text-decoration: underline;
+      display: block;
+    }
+    img.logo {
+      width: 100px;
+      margin-bottom: 10px;
+    }
+    h2 {
+      margin: 10px 0;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="logo">
-    <img src="logo.jpg" alt="KAKUMIRO JUNIOR FC">
+  <div class="login-container">
+    <img src="logo.jpg" alt="Club Logo" class="logo">
+    <h2>KAKUMIRO JUNIOR FC</h2>
+    <p><strong>EST. 2020</strong></p>
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button onclick="login()">Login</button>
+    <span class="forgot" onclick="showRecovery()">Forgot password?</span>
+    <p style="margin-top: 20px; font-size: 13px;">
+      Default admin login: <br><strong>Username:</strong> admin <strong>Password:</strong> admin123
+    </p>
   </div>
-  <h2>KAKUMIRO JUNIOR FC</h2>
-  <h4 style="text-align:center;">EST. 2020</h4>
 
-  <label for="username">Username</label>
-  <input type="text" id="username" required>
-
-  <label for="password">Password</label>
-  <input type="password" id="password" required>
-
-  <button onclick="login()">Login</button>
-  <p class="error" id="errorMsg"></p>
-</div>
-
-<script>
-  // Initialize default admin if not already set
-  if (!localStorage.getItem("users")) {
-    const users = {
-      admin: {
-        password: "admin123",
-        phone: "0700000000",
-        email: "admin@example.com"
-      }
+  <script>
+    // Dummy users stored locally
+    let users = JSON.parse(localStorage.getItem("users")) || {
+      admin: { password: "admin123", phone: "0700000000", email: "admin@example.com" }
     };
-    localStorage.setItem("users", JSON.stringify(users));
-  }
 
-  function login() {
-    const uname = document.getElementById("username").value.trim();
-    const pword = document.getElementById("password").value.trim();
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+    function login() {
+      const uname = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
 
-    if (users[uname] && users[uname].password === pword) {
-      localStorage.setItem("loggedInUser", uname);
-      window.location.href = "home.html";
-    } else {
-      document.getElementById("errorMsg").textContent = "Invalid username or password.";
+      if (users[uname] && users[uname].password === pass) {
+        localStorage.setItem("loggedInUser", uname);
+        window.location.href = "home.html";
+      } else {
+        alert("Invalid username or password.");
+      }
     }
-  }
-</script>
+
+    function showRecovery() {
+      const uname = prompt("Enter your username:");
+      if (!uname || !users[uname]) {
+        alert("User not found.");
+        return;
+      }
+
+      const contact = prompt("Enter your phone or email to verify:");
+      if (contact === users[uname].phone || contact === users[uname].email) {
+        const newPass = prompt("Verified! Enter new password:");
+        if (newPass && newPass.length >= 4) {
+          users[uname].password = newPass;
+          localStorage.setItem("users", JSON.stringify(users));
+          alert("Password updated! You can now log in.");
+        } else {
+          alert("Password too short.");
+        }
+      } else {
+        alert("Verification failed.");
+      }
+    }
+  </script>
 
 </body>
 </html>
