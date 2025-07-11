@@ -11,21 +11,15 @@
       padding: 40px;
       text-align: center;
     }
-    .logo {
-      margin-bottom: 20px;
-    }
     .logo img {
       width: 80px;
     }
-    h1 {
-      color: #4CAF50;
-    }
-    .nav {
-      margin-top: 30px;
+    .logo h1, .logo p {
+      margin: 10px 0;
     }
     .nav a {
       display: inline-block;
-      margin: 10px;
+      margin: 15px;
       padding: 12px 20px;
       background: #4CAF50;
       color: white;
@@ -34,10 +28,7 @@
     }
   </style>
   <script>
-    const user = localStorage.getItem("loggedInUser");
-    if (!user) {
-      window.location.href = "login.html";
-    }
+    if (!localStorage.getItem("loggedInUser")) window.location.href = "login.html";
   </script>
 </head>
 <body>
@@ -47,19 +38,17 @@
   <h1>KAKUMIRO JUNIOR FC</h1>
   <p><strong>EST. 2020</strong></p>
 </div>
-
-<h2>Welcome, <span id="userName"></span></h2>
+<h2>Welcome, <span id="user"></span></h2>
 
 <div class="nav">
   <a href="enter-gate-fee.html">Enter Gate Fee</a>
   <a href="view-data.html">View Records</a>
-  <a href="supporter-registration.html">Register Supporter</a>
+  <a href="register-supporter.html">Register Supporter</a>
   <a href="#" onclick="logout()">Logout</a>
 </div>
 
 <script>
-  document.getElementById("userName").textContent = localStorage.getItem("loggedInUser");
-
+  document.getElementById("user").textContent = localStorage.getItem("loggedInUser");
   function logout() {
     localStorage.removeItem("loggedInUser");
     window.location.href = "login.html";
