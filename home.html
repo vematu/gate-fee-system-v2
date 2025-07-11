@@ -3,105 +3,121 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard - Gate Fee System</title>
+  <title>KAKUMIRO JUNIOR FC | Home</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
-      background: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f0f0;
+      text-align: center;
     }
 
-    .container {
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 20px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    header {
+      background-color: #1b5e20;
+      color: white;
+      padding: 15px 10px;
+    }
+
+    header img {
+      height: 60px;
+      margin-bottom: 5px;
+    }
+
+    h1 {
+      margin: 5px 0 0;
+      font-size: 20px;
     }
 
     h2 {
-      text-align: center;
-      margin-bottom: 20px;
+      margin: 0;
+      font-size: 14px;
+      font-weight: normal;
     }
 
-    .user-info {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-
-    .menu {
+    .nav-grid {
       display: grid;
-      gap: 15px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      padding: 40px 20px;
+      max-width: 500px;
+      margin: auto;
     }
 
-    .menu button {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 16px;
-      padding: 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
+    .nav-icon {
+      background: white;
+      padding: 20px;
       border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.3s ease;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-decoration: none;
+      color: #333;
+      transition: 0.3s;
     }
 
-    .menu button:hover {
+    .nav-icon:hover {
+      background: #c8e6c9;
+    }
+
+    .nav-icon i {
+      font-size: 36px;
+      margin-bottom: 10px;
+      color: #1b5e20;
+    }
+
+    .nav-icon span {
+      display: block;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .top-right {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+
+    .top-right a {
+      text-decoration: none;
+      color: white;
+      font-size: 14px;
       background: #388e3c;
-    }
-
-    .menu i {
-      font-size: 20px;
-      width: 25px;
-      text-align: center;
-    }
-
-    .logout {
-      background: #f44336;
-    }
-
-    .logout:hover {
-      background: #d32f2f;
+      padding: 5px 10px;
+      border-radius: 5px;
     }
   </style>
 </head>
 <body>
 
-  <script>
-    const loggedInUser = localStorage.getItem("loggedInUser");
-    if (!loggedInUser) {
-      window.location.href = "login.html";
-    }
-  </script>
-
-  <div class="container">
-    <h2>Gate Fee System</h2>
-    <div class="user-info">
-      <p>Welcome, <strong id="usernameDisplay"></strong></p>
-    </div>
-
-    <div class="menu">
-      <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
-      <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
-      <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
-      <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
-      <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
-    </div>
+<header>
+  <img src="logo.jpg" alt="Club Logo" />
+  <h1>KAKUMIRO JUNIOR FC</h1>
+  <h2>EST. 2020</h2>
+  <div class="top-right">
+    <a href="index.html"><i class="fas fa-user"></i> Login</a>
   </div>
+</header>
 
-  <script>
-    document.getElementById("usernameDisplay").textContent = localStorage.getItem("loggedInUser");
+<div class="nav-grid">
+  <a class="nav-icon" href="enter-fee.html">
+    <i class="fas fa-cash-register"></i>
+    <span>Enter Gate Fee</span>
+  </a>
 
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      window.location.href = "login.html";
-    }
-  </script>
+  <a class="nav-icon" href="view-data.html">
+    <i class="fas fa-database"></i>
+    <span>View Records</span>
+  </a>
+
+  <a class="nav-icon" href="register-supporter.html">
+    <i class="fas fa-user-plus"></i>
+    <span>Register Supporter</span>
+  </a>
+
+  <a class="nav-icon" href="add-user.html">
+    <i class="fas fa-user-cog"></i>
+    <span>Add User</span>
+  </a>
+</div>
 
 </body>
 </html>
