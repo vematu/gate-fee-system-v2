@@ -2,58 +2,111 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Home - KAKUMIRO JUNIOR FC</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login - Gate Fee System</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #fff;
-      padding: 40px;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    h2 {
       text-align: center;
     }
-    .logo img {
-      width: 80px;
+    label {
+      display: block;
+      margin-top: 15px;
     }
-    .logo h1, .logo p {
-      margin: 10px 0;
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
     }
-    .nav a {
-      display: inline-block;
-      margin: 15px;
-      padding: 12px 20px;
+    button {
+      margin-top: 15px;
+      padding: 10px;
       background: #4CAF50;
       color: white;
-      text-decoration: none;
-      border-radius: 6px;
+      border: none;
+      width: 100%;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    .section {
+      margin-top: 40px;
+      border-top: 1px solid #ccc;
+      padding-top: 20px;
     }
   </style>
-  <script>
-    if (!localStorage.getItem("loggedInUser")) window.location.href = "login.html";
-  </script>
 </head>
 <body>
 
-<div class="logo">
-  <img src="assets/logo.jpg" alt="Club Logo">
-  <h1>KAKUMIRO JUNIOR FC</h1>
-  <p><strong>EST. 2020</strong></p>
-</div>
-<h2>Welcome, <span id="user"></span></h2>
+  <h2>Login</h2>
 
-<div class="nav">
-  <a href="enter-gate-fee.html">Enter Gate Fee</a>
-  <a href="view-data.html">View Records</a>
-  <a href="register-supporter.html">Register Supporter</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+  <label>Username:
+    <input type="text" id="username" />
+  </label>
+  <label>Password:
+    <input type="password" id="password" />
+  </label>
+  <button onclick="login()">Login</button>
 
-<script>
-  document.getElementById("user").textContent = localStorage.getItem("loggedInUser");
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
-</script>
+  <div class="section">
+    <h2>Forgot Password?</h2>
+    <label>Username: <input type="text" id="resetUsername" /></label>
+    <label>Email/Phone: <input type="text" id="resetContact" /></label>
+    <label>New Password: <input type="password" id="resetPassword" /></label>
+    <button onclick="resetPassword()">Reset Password</button>
+  </div>
+
+  <script>
+    function getUsers() {
+      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+    }
+
+    function login() {
+      const uname = document.getElementById("username").value.trim();
+      const pword = document.getElementById("password").value;
+
+      const users = getUsers();
+
+      if (users[uname] && users[uname].password === pword) {
+        localStorage.setItem("loggedInUser", uname);
+        alert("Login successful!");
+        window.location.href = "enter-gate-fee.html";
+      } else {
+        alert("Invalid username or password");
+      }
+    }
+
+    function resetPassword() {
+      const uname = document.getElementById("resetUsername").value.trim();
+      const contact = document.getElementById("resetContact").value.trim();
+      const newPass = document.getElementById("resetPassword").value;
+
+      const users = getUsers();
+
+      if (users[uname] && users[uname].contact === contact) {
+        users[uname].password = newPass;
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+        alert("Password updated successfully!");
+      } else {
+        alert("User not found or contact does not match");
+      }
+    }
+
+    // Initialize default admin on first load
+    window.onload = () => {
+      const users = getUsers();
+      if (!users.admin) {
+        users.admin = { password: "admin123", contact: "admin@example.com" };
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      }
+    };
+  </script>
 
 </body>
 </html>
