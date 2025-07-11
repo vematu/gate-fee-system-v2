@@ -3,56 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Home - KAKUMIRO JUNIOR FC</title>
+  <title>Login - KAKUMIRO JUNIOR FC</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #fff;
+      background: #f0f2f5;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       padding: 40px;
-      text-align: center;
     }
     .logo img {
       width: 80px;
+      margin-bottom: 10px;
     }
-    .logo h1, .logo p {
+    h1, h3 {
+      margin: 5px 0;
+    }
+    form {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    input, button {
+      width: 100%;
+      padding: 12px;
       margin: 10px 0;
     }
-    .nav a {
-      display: inline-block;
-      margin: 15px;
-      padding: 12px 20px;
+    button {
       background: #4CAF50;
       color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .link a {
+      color: #4CAF50;
       text-decoration: none;
-      border-radius: 6px;
+      font-size: 14px;
     }
   </style>
-  <script>
-    if (!localStorage.getItem("loggedInUser")) window.location.href = "login.html";
-  </script>
 </head>
 <body>
 
 <div class="logo">
   <img src="assets/logo.jpg" alt="Club Logo">
-  <h1>KAKUMIRO JUNIOR FC</h1>
-  <p><strong>EST. 2020</strong></p>
 </div>
-<h2>Welcome, <span id="user"></span></h2>
+<h1>KAKUMIRO JUNIOR FC</h1>
+<h3>EST. 2020</h3>
 
-<div class="nav">
-  <a href="enter-gate-fee.html">Enter Gate Fee</a>
-  <a href="view-data.html">View Records</a>
-  <a href="register-supporter.html">Register Supporter</a>
-  <a href="#" onclick="logout()">Logout</a>
-</div>
+<form id="loginForm">
+  <input type="text" id="username" placeholder="Username" required />
+  <input type="password" id="password" placeholder="Password" required />
+  <button type="submit">Login</button>
+  <div class="link">
+    <a href="#" onclick="alert('Forgot password? Coming soon.')">Forgot password?</a>
+  </div>
+</form>
 
 <script>
-  document.getElementById("user").textContent = localStorage.getItem("loggedInUser");
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
+  const firebaseConfig = {
+    apiKey: "...",
+    authDomain: "...",
+    databaseURL: "...",
+    // (rest of your config)
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  document.getElementById("loginForm").addEventListener("submit", e => {
+    e.preventDefault();
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value.trim();
+
+    db.ref("users/" + u).once("value").then(snap => {
+      if (!snap.exists()) return alert("User not found.");
+      if (snap.val().password !== p) return alert("Invalid password.");
+      localStorage.setItem("loggedInUser", u);
+      window.location.href = "index.html";
+    });
+  });
 </script>
 
 </body>
