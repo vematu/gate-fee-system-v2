@@ -15,20 +15,12 @@
       align-items: center;
       padding: 40px;
     }
-    .logo {
-      text-align: center;
-    }
     .logo img {
       width: 80px;
       margin-bottom: 10px;
     }
-    h1 {
-      color: #4CAF50;
+    h1, h3 {
       margin: 5px 0;
-    }
-    h3 {
-      font-weight: normal;
-      margin-bottom: 20px;
     }
     form {
       background: white;
@@ -38,28 +30,21 @@
       max-width: 400px;
       width: 100%;
     }
-    input {
+    input, button {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       margin: 10px 0;
     }
     button {
-      width: 100%;
       background: #4CAF50;
       color: white;
       border: none;
-      padding: 12px;
-      font-size: 16px;
       cursor: pointer;
-    }
-    .link {
-      margin-top: 10px;
-      text-align: center;
-      font-size: 14px;
     }
     .link a {
       color: #4CAF50;
       text-decoration: none;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -67,44 +52,39 @@
 
 <div class="logo">
   <img src="assets/logo.jpg" alt="Club Logo">
-  <h1>KAKUMIRO JUNIOR FC</h1>
-  <h3>EST. 2020</h3>
 </div>
+<h1>KAKUMIRO JUNIOR FC</h1>
+<h3>EST. 2020</h3>
 
 <form id="loginForm">
   <input type="text" id="username" placeholder="Username" required />
   <input type="password" id="password" placeholder="Password" required />
   <button type="submit">Login</button>
   <div class="link">
-    <a href="#" onclick="alert('Recovery feature coming soon!')">Forgot Password?</a>
+    <a href="#" onclick="alert('Forgot password? Coming soon.')">Forgot password?</a>
   </div>
 </form>
 
 <script>
   const firebaseConfig = {
-    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-    authDomain: "gate-fee-system.firebaseapp.com",
-    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-    projectId: "gate-fee-system",
-    storageBucket: "gate-fee-system.appspot.com",
-    messagingSenderId: "35497617973",
-    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+    apiKey: "...",
+    authDomain: "...",
+    databaseURL: "...",
+    // (rest of your config)
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  document.getElementById("loginForm").addEventListener("submit", function(e) {
+  document.getElementById("loginForm").addEventListener("submit", e => {
     e.preventDefault();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const u = document.getElementById("username").value.trim();
+    const p = document.getElementById("password").value.trim();
 
-    db.ref("users/" + username).once("value").then(snapshot => {
-      if (snapshot.exists() && snapshot.val().password === password) {
-        localStorage.setItem("loggedInUser", username);
-        window.location.href = "index.html";
-      } else {
-        alert("Invalid username or password");
-      }
+    db.ref("users/" + u).once("value").then(snap => {
+      if (!snap.exists()) return alert("User not found.");
+      if (snap.val().password !== p) return alert("Invalid password.");
+      localStorage.setItem("loggedInUser", u);
+      window.location.href = "index.html";
     });
   });
 </script>
