@@ -9,8 +9,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
       background: #f0f2f5;
+      padding: 20px;
     }
     h2 { text-align: center; }
     form {
@@ -44,6 +44,14 @@
       border: 2px dashed #000;
       background: #fff;
       display: none;
+      position: relative;
+    }
+    .receipt-logo {
+      text-align: center;
+    }
+    .receipt-logo img {
+      max-width: 80px;
+      margin-bottom: 10px;
     }
     @media print {
       body * { visibility: hidden; }
@@ -151,32 +159,37 @@
   function showReceipt(entry) {
     const box = document.getElementById("receiptBox");
     box.innerHTML = `
-      <h3 style="text-align:center;">GATE RECEIPT</h3>
-      <p><strong>Receipt No:</strong> ${entry.receiptNo}</p>
-      <p><strong>Name:</strong> ${entry.name}</p>
-      <p><strong>Phone:</strong> ${entry.phone}</p>
-      <p><strong>Event:</strong> ${entry.event}</p>
-      <p><strong>Amount:</strong> UGX ${entry.amount}</p>
-      <p><strong>Method:</strong> ${entry.method}</p>
-      <p><strong>Date:</strong> ${entry.date}</p>
-      <p><strong>Served By:</strong> ${entry.servedBy}</p>
-      <p style="margin-top:20px;">Thank you for your payment!</p>
+      <div class="receipt-logo">
+        <img src="https://vematu.github.io/gate-fee-system-v2/assets/logo.jpg" alt="Club Logo" />
+      </div>
+      <h3 style="text-align:center;">KAKUMIRO JUNIOR FC</h3>
+      <p style="text-align:center; font-weight:bold;">EST. 2020</p>
+      <p style="text-align:center; font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
+      <p><strong>Receipt No:</strong><br>${entry.receiptNo}</p>
+      <p><strong>Name:</strong><br>${entry.name}</p>
+      <p><strong>Phone:</strong><br>${entry.phone}</p>
+      <p><strong>Event:</strong><br>${entry.event}</p>
+      <p><strong>Amount Paid:</strong><br>UGX ${entry.amount}</p>
+      <p><strong>Payment Method:</strong><br>${entry.method}</p>
+      <p><strong>Date:</strong><br>${entry.date}</p>
+      <p><strong>Served By:</strong><br>${entry.servedBy}</p>
+      <p style="margin-top:15px;text-align:center;">We appreciate your support!</p>
     `;
     box.style.display = "block";
   }
 
   async function bluetoothPrint(entry) {
-    const text = `\nGATE RECEIPT\nReceipt No: ${entry.receiptNo}\nName: ${entry.name}\nPhone: ${entry.phone}\nEvent: ${entry.event}\nAmount: UGX ${entry.amount}\nMethod: ${entry.method}\nDate: ${entry.date}\nServed By: ${entry.servedBy}\n\nThank you!\n`;
+    const text = `\nKAKUMIRO JUNIOR FC\nEST. 2020\nGATE RECEIPT\n\nReceipt No:\n${entry.receiptNo}\nName:\n${entry.name}\nPhone:\n${entry.phone}\nEvent:\n${entry.event}\nAmount:\nUGX ${entry.amount}\nMethod:\n${entry.method}\nDate:\n${entry.date}\nServed By:\n${entry.servedBy}\n\nWe appreciate your support!\n`;
 
     try {
       const device = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ["000018f0-0000-1000-8000-00805f9b34fb"]
+        optionalServices: [0x1101]
       });
 
       const server = await device.gatt.connect();
-      const service = await server.getPrimaryService("000018f0-0000-1000-8000-00805f9b34fb");
-      const characteristic = await service.getCharacteristic("00002af1-0000-1000-8000-00805f9b34fb");
+      const service = await server.getPrimaryService(0x1101);
+      const characteristic = await service.getCharacteristic(0x2a56);
 
       const encoder = new TextEncoder();
       await characteristic.writeValue(encoder.encode(text));
