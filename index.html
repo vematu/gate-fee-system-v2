@@ -1,177 +1,119 @@
-<style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gate Fee System - Login</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#4CAF50" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" type="image/png" />
+
+  <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      background: #f0f0f0;
       text-align: center;
-      padding: 50px 20px;
-    }
-    .container {
-    .login-container {
-      max-width: 400px;
-      margin: auto;
-      background: white;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      max-width: 400px;
-      width: 100%;
     }
-    .logo {
-      text-align: center;
-      margin-bottom: 20px;
+    h1 {
+      color: #4CAF50;
     }
-    .logo img {
-      width: 80px;
-      height: auto;
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    label {
-      display: block;
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
       margin-top: 15px;
-      font-weight: bold;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      font-size: 16px;
+    }
+    .btn:hover {
+      background-color: #45a049;
     }
     input {
-      width: 100%;
       padding: 10px;
-      margin-top: 5px;
-      box-sizing: border-box;
-      margin: 10px 0;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      color: white;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-    .error {
-      color: red;
-    button:hover {
-      background: #45a049;
-    }
-    .forgot {
+      width: 80%;
       margin-top: 10px;
-      text-align: center;
-      color: blue;
-      cursor: pointer;
-      text-decoration: underline;
-      display: block;
+      font-size: 16px;
     }
-    img.logo {
-      width: 100px;
-      margin-bottom: 10px;
+    #installBtn {
+      display: none;
     }
-    h2 {
-      margin: 10px 0;
+    footer {
+      margin-top: 30px;
+      font-size: 13px;
+      color: gray;
     }
   </style>
-</head>
-<body>
 
-<div class="container">
-  <div class="logo">
-    <img src="logo.jpg" alt="KAKUMIRO JUNIOR FC">
-  <div class="login-container">
-    <img src="logo.jpg" alt="Club Logo" class="logo">
-    <h2>KAKUMIRO JUNIOR FC</h2>
-    <p><strong>EST. 2020</strong></p>
-    <h3>Login</h3>
-    <input type="text" id="username" placeholder="Username" required />
-    <input type="password" id="password" placeholder="Password" required />
-    <button onclick="login()">Login</button>
-    <span class="forgot" onclick="showRecovery()">Forgot password?</span>
-    <p style="margin-top: 20px; font-size: 13px;">
-      Default admin login: <br><strong>Username:</strong> admin <strong>Password:</strong> admin123
-    </p>
-  </div>
-  <h2>KAKUMIRO JUNIOR FC</h2>
-  <h4 style="text-align:center;">EST. 2020</h4>
-
-  <label for="username">Username</label>
-  <input type="text" id="username" required>
-
-  <label for="password">Password</label>
-  <input type="password" id="password" required>
   <script>
-    // Dummy users stored locally
-    let users = JSON.parse(localStorage.getItem("users")) || {
-      admin: { password: "admin123", phone: "0700000000", email: "admin@example.com" }
+    // Dummy user credentials
+    const users = {
+      "admin": {
+        password: "admin123",
+        role: "admin"
+      }
     };
 
-  <button onclick="login()">Login</button>
-  <p class="error" id="errorMsg"></p>
-</div>
     function login() {
-      const uname = document.getElementById("username").value;
-      const pass = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
 
-<script>
-  // Initialize default admin if not already set
-  if (!localStorage.getItem("users")) {
-    const users = {
-      admin: {
-        password: "admin123",
-        phone: "0700000000",
-        email: "admin@example.com"
-      if (users[uname] && users[uname].password === pass) {
-        localStorage.setItem("loggedInUser", uname);
+      if (users[username] && users[username].password === password) {
+        // Save user to session
+        sessionStorage.setItem("loggedUser", username);
+        // Redirect to home page
         window.location.href = "home.html";
       } else {
         alert("Invalid username or password.");
       }
-    };
-    localStorage.setItem("users", JSON.stringify(users));
-  }
+    }
+  </script>
+
+</head>
+<body>
+
+  <h1>Welcome to the Gate Fee System</h1>
+  <p>Please log in to continue:</p>
+
+  <input type="text" id="username" placeholder="Username" /><br/>
+  <input type="password" id="password" placeholder="Password" /><br/>
+  <button class="btn" onclick="login()">Login</button>
+
+  <!-- Install App Button -->
+  <button id="installBtn" class="btn">Install App</button>
+
+  <footer>
+    <p>&copy; 2025 Gate Fee System</p>
+  </footer>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker Registered', reg.scope))
+        .catch(err => console.error('Service Worker Error', err));
     }
 
-  function login() {
-    const uname = document.getElementById("username").value.trim();
-    const pword = document.getElementById("password").value.trim();
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
-    function showRecovery() {
-      const uname = prompt("Enter your username:");
-      if (!uname || !users[uname]) {
-        alert("User not found.");
-        return;
-      }
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
 
-    if (users[uname] && users[uname].password === pword) {
-      localStorage.setItem("loggedInUser", uname);
-      window.location.href = "home.html";
-    } else {
-      document.getElementById("errorMsg").textContent = "Invalid username or password.";
-      const contact = prompt("Enter your phone or email to verify:");
-      if (contact === users[uname].phone || contact === users[uname].email) {
-        const newPass = prompt("Verified! Enter new password:");
-        if (newPass && newPass.length >= 4) {
-          users[uname].password = newPass;
-          localStorage.setItem("users", JSON.stringify(users));
-          alert("Password updated! You can now log in.");
-        } else {
-          alert("Password too short.");
-        }
-      } else {
-        alert("Verification failed.");
-      }
-    }
-  }
-</script>
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+    });
+
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('User response to install prompt:', outcome);
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
   </script>
 
 </body>
