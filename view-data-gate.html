@@ -3,170 +3,105 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gate Fee Records</title>
+  <title>Dashboard - Gate Fee System</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
-      padding: 20px;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
     }
+
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
-    .container {
-      max-width: 95%;
-      margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 10px;
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 30px;
     }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
+
+    .menu {
+      display: grid;
+      gap: 15px;
+    }
+
+    .menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       font-size: 16px;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 10px;
-    }
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    button {
-      padding: 10px;
-      margin-top: 10px;
-      background: #2196F3;
+      padding: 15px;
+      background: #4CAF50;
       color: white;
       border: none;
+      border-radius: 10px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
-    button:hover {
-      background: #0b7dda;
+
+    .menu button:hover {
+      background: #388e3c;
+    }
+
+    .menu i {
+      font-size: 20px;
+      width: 25px;
+      text-align: center;
+    }
+
+    .logout {
+      background: #f44336;
+    }
+
+    .logout:hover {
+      background: #d32f2f;
     }
   </style>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
-<h2>Gate Fee Records</h2>
+  <script>
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (!loggedInUser) {
+      window.location.href = "login.html";
+    }
+  </script>
 
-<div class="container">
-  <input type="text" id="searchInput" placeholder="Search by name, phone, receipt number, or event..." oninput="filterTable()">
+  <div class="container">
+    <h2>Gate Fee System</h2>
+    <div class="user-info">
+      <p>Welcome, <strong id="usernameDisplay"></strong></p>
+    </div>
 
-  <table id="recordTable">
-    <thead>
-      <tr>
-        <th>Receipt No</th>
-        <th>Name</th>
-        <th>Phone</th>
-        <th>Event</th>
-        <th>Amount</th>
-        <th>Method</th>
-        <th>Date</th>
-        <th>Served By</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+    <div class="menu">
+      <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
+      <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
+      <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
+      <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
+      <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
 
-  <button onclick="exportCSV()">Download CSV</button>
-</div>
+  <script>
+    document.getElementById("usernameDisplay").textContent = localStorage.getItem("loggedInUser");
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-    authDomain: "gate-fee-system.firebaseapp.com",
-    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-    projectId: "gate-fee-system",
-    storageBucket: "gate-fee-system.appspot.com",
-    messagingSenderId: "35497617973",
-    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const tbody = document.querySelector("#recordTable tbody");
-  let allRecords = [];
-
-  function fetchGateFeeRecords() {
-    db.ref("gateFeeRecords").once("value", snapshot => {
-      const data = snapshot.val();
-      allRecords = [];
-      tbody.innerHTML = "";
-
-      if (data) {
-        Object.values(data).forEach(record => {
-          allRecords.push(record);
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${record.receiptNo}</td>
-            <td>${record.name}</td>
-            <td>${record.phone}</td>
-            <td>${record.event}</td>
-            <td>UGX ${record.amount}</td>
-            <td>${record.method}</td>
-            <td>${record.date}</td>
-            <td>${record.servedBy}</td>
-          `;
-          tbody.appendChild(row);
-        });
-      }
-    });
-  }
-
-  function filterTable() {
-    const term = document.getElementById("searchInput").value.toLowerCase();
-    tbody.innerHTML = "";
-
-    const filtered = allRecords.filter(r =>
-      r.name.toLowerCase().includes(term) ||
-      r.phone.toLowerCase().includes(term) ||
-      r.receiptNo.toLowerCase().includes(term) ||
-      r.event.toLowerCase().includes(term)
-    );
-
-    filtered.forEach(record => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${record.receiptNo}</td>
-        <td>${record.name}</td>
-        <td>${record.phone}</td>
-        <td>${record.event}</td>
-        <td>UGX ${record.amount}</td>
-        <td>${record.method}</td>
-        <td>${record.date}</td>
-        <td>${record.servedBy}</td>
-      `;
-      tbody.appendChild(row);
-    });
-  }
-
-  function exportCSV() {
-    let csv = "Receipt No,Name,Phone,Event,Amount,Method,Date,Served By\n";
-    allRecords.forEach(r => {
-      csv += `${r.receiptNo},${r.name},${r.phone},${r.event},${r.amount},${r.method},${r.date},${r.servedBy}\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "gate_fee_records.csv";
-    a.click();
-  }
-
-  window.onload = fetchGateFeeRecords;
-</script>
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
+    }
+  </script>
 
 </body>
 </html>
