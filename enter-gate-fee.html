@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Enter Gate Fee</title>
+  <title>Kakumiro Junior Gate Collection</title>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
@@ -12,7 +12,10 @@
       background: #f0f2f5;
       padding: 20px;
     }
-    h2 { text-align: center; }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
     form {
       max-width: 500px;
       margin: auto;
@@ -21,7 +24,10 @@
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    label { display: block; margin-top: 10px; }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
     input, select {
       width: 100%;
       padding: 10px;
@@ -38,20 +44,13 @@
       cursor: pointer;
     }
     .receipt {
-      max-width: 500px;
+      max-width: 400px;
       margin: 20px auto;
       padding: 20px;
       border: 2px dashed #000;
       background: #fff;
       display: none;
-      position: relative;
-    }
-    .receipt-logo {
       text-align: center;
-    }
-    .receipt-logo img {
-      max-width: 80px;
-      margin-bottom: 10px;
     }
     @media print {
       body * { visibility: hidden; }
@@ -69,15 +68,9 @@
 </head>
 <body>
 
-<h2>Enter Gate Fee</h2>
+<h2>Kakumiro Junior Gate Collection</h2>
 
 <form id="gateForm">
-  <label>Full Name:
-    <input type="text" name="fullName" required />
-  </label>
-  <label>Phone Number:
-    <input type="tel" name="phone" required />
-  </label>
   <label>Event Name:
     <input type="text" name="eventName" required />
   </label>
@@ -85,17 +78,15 @@
     <input type="number" name="amount" required />
   </label>
   <label>Payment Method:
-    <select name="paymentMethod">
+    <select name="paymentMethod" required>
+      <option value="">Select</option>
       <option>Cash</option>
       <option>Mobile Money</option>
       <option>Card</option>
     </select>
   </label>
   <label>Date of Payment:
-    <input type="date" name="paymentDate" required />
-  </label>
-  <label>Signature of Payer:
-    <input type="text" name="signature" required />
+    <input type="date" name="paymentDate" id="paymentDate" required />
   </label>
 
   <button type="submit">Submit & Print</button>
@@ -104,6 +95,9 @@
 <div class="receipt" id="receiptBox"></div>
 
 <script>
+  // Auto-set today's date
+  document.getElementById("paymentDate").valueAsDate = new Date();
+
   const firebaseConfig = {
     apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
     authDomain: "gate-fee-system.firebaseapp.com",
@@ -127,13 +121,10 @@
     const data = new FormData(e.target);
     const entry = {
       receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
-      name: data.get("fullName"),
-      phone: data.get("phone"),
       event: data.get("eventName"),
       amount: data.get("amount"),
       method: data.get("paymentMethod"),
       date: data.get("paymentDate"),
-      signature: data.get("signature"),
       servedBy: localStorage.getItem("loggedInUser") || "unknown"
     };
 
@@ -150,6 +141,7 @@
 
     showReceipt(entry);
     e.target.reset();
+    document.getElementById("paymentDate").valueAsDate = new Date(); // reset date
 
     setTimeout(() => {
       bluetoothPrint(entry);
@@ -159,27 +151,43 @@
   function showReceipt(entry) {
     const box = document.getElementById("receiptBox");
     box.innerHTML = `
-      <div class="receipt-logo">
-        <img src="https://vematu.github.io/gate-fee-system-v2/assets/logo.jpg" alt="Club Logo" />
-      </div>
-      <h3 style="text-align:center;">KAKUMIRO JUNIOR FC</h3>
-      <p style="text-align:center; font-weight:bold;">EST. 2020</p>
-      <p style="text-align:center; font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
+      <h3>KAKUMIRO JUNIOR FC</h3>
+      <p><strong>EST. 2020</strong></p>
+      <p style="font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
       <p><strong>Receipt No:</strong><br>${entry.receiptNo}</p>
-      <p><strong>Name:</strong><br>${entry.name}</p>
-      <p><strong>Phone:</strong><br>${entry.phone}</p>
       <p><strong>Event:</strong><br>${entry.event}</p>
       <p><strong>Amount Paid:</strong><br>UGX ${entry.amount}</p>
       <p><strong>Payment Method:</strong><br>${entry.method}</p>
       <p><strong>Date:</strong><br>${entry.date}</p>
       <p><strong>Served By:</strong><br>${entry.servedBy}</p>
-      <p style="margin-top:15px;text-align:center;">We appreciate your support!</p>
+      <p style="margin-top:15px;">We appreciate your support!</p>
+      <p><strong>One Team, One Dream</strong></p>
     `;
     box.style.display = "block";
   }
 
   async function bluetoothPrint(entry) {
-    const text = `\nKAKUMIRO JUNIOR FC\nEST. 2020\nGATE RECEIPT\n\nReceipt No:\n${entry.receiptNo}\nName:\n${entry.name}\nPhone:\n${entry.phone}\nEvent:\n${entry.event}\nAmount:\nUGX ${entry.amount}\nMethod:\n${entry.method}\nDate:\n${entry.date}\nServed By:\n${entry.servedBy}\n\nWe appreciate your support!\n`;
+    const text = `
+KAKUMIRO JUNIOR FC
+EST. 2020
+GATE RECEIPT
+
+Receipt No:
+${entry.receiptNo}
+Event:
+${entry.event}
+Amount:
+UGX ${entry.amount}
+Method:
+${entry.method}
+Date:
+${entry.date}
+Served By:
+${entry.servedBy}
+
+We appreciate your support!
+One Team, One Dream
+    `;
 
     try {
       const device = await navigator.bluetooth.requestDevice({
