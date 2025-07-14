@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Settings - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .settings-container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      text-align: center;
+      color: #2e7d32;
+      margin-bottom: 20px;
+    }
+
+    .user-card {
+      background: #f9f9f9;
+      margin-bottom: 15px;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 4px rgba(0,0,0,0.05);
+    }
+
+    .user-card strong {
+      color: #333;
+    }
+
+    .user-card input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    .user-card button {
+      margin-top: 10px;
+      padding: 8px 12px;
+      font-size: 14px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .user-card button.delete {
+      background: #f44336;
+      margin-left: 10px;
+    }
+
+    .user-card button:hover {
+      opacity: 0.9;
+    }
+
+    .back-btn {
+      display: block;
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .back-btn a {
+      color: #4CAF50;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-btn a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    const currentUser = localStorage.getItem("loggedInUser");
+    if (!currentUser || currentUser !== "admin") {
+      alert("Access denied. Admin only.");
+      window.location.href = "login.html";
+    }
+  </script>
+
+  <div class="settings-container">
+    <h2>⚙️ System Settings (Admin)</h2>
+    <div id="userList"></div>
+    <div class="back-btn">
+      <a href="home.html"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
+  </div>
+
+  <script>
+    const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+
+    function saveUsers(updated) {
+      localStorage.setItem("gateSystemUsers", JSON.stringify(updated));
+    }
+
+    function renderUsers() {
+      const container = document.getElementById("userList");
+      container.innerHTML = "";
+
+      Object.entries(users).forEach(([username, data]) => {
+        const card = document.createElement("div");
+        card.className = "user-card";
+
+        card.innerHTML = `
+          <strong>Username:</strong> ${username}<br>
+          <label>Password:
+            <input type="text" id="pass-${username}" value="${data.password}" />
+          </label><br>
+          <label>Contact (Phone/Email):
+            <input type="text" id="contact-${username}" value="${data.contact}" />
+          </label><br>
+          <button onclick="updateUser('${username}')">Save Changes</button>
+          ${username !== "admin" ? `<button class="delete" onclick="deleteUser('${username}')">Delete</button>` : ""}
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function updateUser(username) {
+      const newPass = document.getElementById("pass-" + username).value.trim();
+      const newContact = document.getElementById("contact-" + username).value.trim();
+
+      if (!newPass || !newContact) {
+        alert("Please fill out all fields.");
+        return;
+      }
+
+      users[username].password = newPass;
+      users[username].contact = newContact;
+      saveUsers(users);
+      alert(`User "${username}" updated successfully.`);
+    }
+
+    function deleteUser(username) {
+      if (confirm(`Are you sure you want to delete user "${username}"?`)) {
+        delete users[username];
+        saveUsers(users);
+        renderUsers();
+        alert(`User "${username}" deleted.`);
+      }
+    }
+
+    renderUsers();
+  </script>
+
+</body>
+</html>
