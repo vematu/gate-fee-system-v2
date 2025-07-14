@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Add User - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -49,7 +50,8 @@
   </style>
 </head>
 <body>
-<body>
+
+  <!-- Logo -->
   <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo centered-logo" />
 
   <h2>Add New User</h2>
@@ -71,61 +73,35 @@
     <div id="statusMsg"></div>
   </form>
 
-<h2>Add New User</h2>
+  <script>
+    let users = JSON.parse(localStorage.getItem("users") || "{}");
+    const currentUser = localStorage.getItem("loggedInUser") || "admin";
 
-<form id="addUserForm">
-  <label>Username:
-    <input type="text" id="username" required />
-  </label>
-  <label>Password:
-    <input type="password" id="password" required />
-  </label>
-  <label>Phone Number:
-    <input type="tel" id="phone" required />
-  </label>
-  <label>Email Address:
-    <input type="email" id="email" required />
-  </label>
-  <button type="submit">Add User</button>
-  <div id="statusMsg"></div>
-</form>
-
-<script>
-  // Simple localStorage users management with phone/email
-  let users = JSON.parse(localStorage.getItem("users") || "{}");
-
-  // For demo: assume current user is admin (add your own auth check here)
-  const currentUser = localStorage.getItem("loggedInUser") || "admin";
-
-  if (currentUser !== "admin") {
-    alert("Access denied. Admin only.");
-    // redirect or disable form here if you want
-  }
-
-  document.getElementById("addUserForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const email = document.getElementById("email").value.trim();
-
-    if (users[username]) {
-      document.getElementById("statusMsg").style.color = "red";
-      document.getElementById("statusMsg").textContent = "User already exists.";
-      return;
+    if (currentUser !== "admin") {
+      alert("Access denied. Admin only.");
     }
 
-    // Save user
-    users[username] = { password, phone, email };
-    localStorage.setItem("users", JSON.stringify(users));
+    document.getElementById("addUserForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
 
-    document.getElementById("statusMsg").style.color = "green";
-    document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
+      if (users[username]) {
+        document.getElementById("statusMsg").style.color = "red";
+        document.getElementById("statusMsg").textContent = "User already exists.";
+        return;
+      }
 
-    // Clear form
-    e.target.reset();
-  });
-</script>
+      users[username] = { password, phone, email };
+      localStorage.setItem("users", JSON.stringify(users));
+
+      document.getElementById("statusMsg").style.color = "green";
+      document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
+      e.target.reset();
+    });
+  </script>
 
 </body>
 </html>
