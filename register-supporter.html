@@ -147,15 +147,12 @@
     localData.push(entry);
     localStorage.setItem("supporterRecords", JSON.stringify(localData));
 
-    // Save to Firebase
+    // Save to Firebase and generate certificate
     db.ref("supporterRecords/" + entry.id).set(entry)
       .then(() => {
         document.getElementById("successMsg").textContent = "Supporter registered successfully!";
         e.target.reset();
         setTimeout(() => document.getElementById("successMsg").textContent = "", 3000);
-
-        // Show pop-up and generate certificate
-        alert("Supporter registered. Downloading certificate...");
         generateCertificate(entry);
       })
       .catch(err => {
@@ -163,18 +160,15 @@
       });
   });
 
-  // Generate Certificate PDF
   function generateCertificate(entry) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape' });
 
-    // Background color
     doc.setFillColor(240, 255, 240);
     doc.rect(0, 0, 297, 210, 'F');
 
-    // Logo
     const logo = new Image();
-    logo.src = "logo.jpg"; // Must be local or base64; ensure logo.jpg is in same folder
+    logo.src = "logo.jpg"; // Must be available in your project directory
 
     logo.onload = () => {
       doc.addImage(logo, 'JPEG', 125, 15, 45, 45);
@@ -209,8 +203,20 @@
       doc.setFont('courier', 'bolditalic');
       doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
 
-      // Save the PDF
-      doc.save(`KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`);
+      const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
+      const blob = doc.output("blob");
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.style.display = "none";
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(url);
+      a.remove();
+
+      alert(`🎉 Congratulations, ${entry.name}! Your supporter certificate has been downloaded successfully.`);
     };
   }
 </script>
