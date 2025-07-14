@@ -102,6 +102,24 @@
       border-top: 1px solid #ccc;
       padding-top: 20px;
     }
+
+    .settings-icon {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      color: #4CAF50;
+      background: white;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+
+    .settings-icon a {
+      color: inherit;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -137,6 +155,7 @@
     </div>
   </div>
 
+  <!-- Admin-only settings icon -->
   <script>
     function getUsers() {
       return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
@@ -176,12 +195,20 @@
       document.getElementById("resetForm").style.display = "block";
     }
 
-    // Auto-create admin if not found
+    // Auto-create admin and inject settings icon
     window.onload = () => {
       const users = getUsers();
       if (!users.admin) {
         users.admin = { password: "admin123", contact: "admin@example.com" };
         localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      }
+
+      const loggedUser = localStorage.getItem("loggedInUser");
+      if (loggedUser === "admin") {
+        const icon = document.createElement("div");
+        icon.className = "settings-icon";
+        icon.innerHTML = `<a href="settings.html" title="Admin Settings"><i class="fas fa-cog"></i></a>`;
+        document.body.appendChild(icon);
       }
     };
   </script>
