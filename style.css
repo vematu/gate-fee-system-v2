@@ -1,16 +1,44 @@
-/* GLOBAL STYLES */
+/* General body styling */
 body {
   font-family: Arial, sans-serif;
-  background: #f0f2f5;
+  background: #f2f2f2;
   margin: 0;
   padding: 0;
 }
 
-h2 {
-  text-align: center;
-  margin-bottom: 20px;
+/* Centered logo styling for login and register pages */
+.logo-centered {
+  display: block;
+  margin: 30px auto 20px auto;
+  max-width: 120px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
 }
 
+/* Top-left logo for dashboard and main pages */
+.logo-top-left {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Bottom corner watermark logo for data/view pages */
+.logo-watermark {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 50px;
+  opacity: 0.3;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Container styling (used in many forms/pages) */
 .container {
   max-width: 500px;
   margin: 40px auto;
@@ -20,18 +48,44 @@ h2 {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
+/* Button styling */
 button {
-  padding: 10px 15px;
-  background: #4CAF50;
+  background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 8px;
+  padding: 12px 20px;
   font-size: 16px;
   cursor: pointer;
+  border-radius: 8px;
+  margin-top: 15px;
+  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background: #388e3c;
+  background-color: #388E3C;
+}
+
+/* Table styling for data pages */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+/* Input and label spacing */
+label {
+  display: block;
+  margin-top: 10px;
 }
 
 input, select {
@@ -39,115 +93,11 @@ input, select {
   padding: 10px;
   margin-top: 5px;
   font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
 }
 
-/* MENU BUTTONS */
-.menu {
-  display: grid;
-  gap: 15px;
-}
-
-.menu button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 16px;
-  padding: 15px;
-  background: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.menu button:hover {
-  background: #388e3c;
-}
-
-.menu i {
-  font-size: 20px;
-  width: 25px;
-  text-align: center;
-}
-
-.logout {
-  background: #f44336;
-}
-
-.logout:hover {
-  background: #d32f2f;
-}
-
-/* FORMS */
-form {
-  background: #fff;
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-label {
-  display: block;
-  margin-top: 10px;
-}
-
+/* Success message */
 .success {
   text-align: center;
   color: green;
   margin-top: 15px;
-}
-
-/* TABLES */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  border: 1px solid #ccc;
-  padding: 8px;
-}
-
-th {
-  background: #f2f2f2;
-}
-
-input[type="text"] {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-}
-
-/* LOGO STYLES */
-
-/* Centered large logo for login/register pages */
-.logo-banner {
-  display: block;
-  margin: 0 auto 20px auto;
-  max-width: 120px;
-  height: auto;
-  box-shadow: 0 0 8px rgba(0,0,0,0.1);
-}
-
-/* Small logo beside heading (e.g., dashboard) */
-.logo-header {
-  max-width: 60px;
-  height: auto;
-  margin-right: 10px;
-  vertical-align: middle;
-}
-
-/* Fixed bottom corner logo (for background branding) */
-.logo-fixed {
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  max-width: 80px;
-  opacity: 0.3;
-  z-index: 10;
 }
