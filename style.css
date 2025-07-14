@@ -1,1 +1,24 @@
 body { font-family: Arial, sans-serif; ...CSS CONTENT HERE... }
+.logo-banner {
+  display: block;
+  margin: 0 auto 20px auto;
+  max-width: 120px;
+  height: auto;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.logo-header {
+  max-width: 60px;
+  height: auto;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.logo-fixed {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  max-width: 80px;
+  opacity: 0.3;
+  z-index: 10;
+}
