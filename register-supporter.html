@@ -59,11 +59,54 @@
       background: #388E3C;
     }
 
-    .success {
+    /* Confirmation popup styles */
+    #confirmationPopup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .popup-content {
+      background: white;
+      padding: 30px;
       text-align: center;
-      color: green;
-      margin-top: 15px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      max-width: 400px;
+    }
+
+    .popup-content img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+
+    .popup-content h3 {
+      color: #2e7d32;
+      font-size: 22px;
+    }
+
+    .popup-content .motto {
+      font-style: italic;
       font-weight: bold;
+      margin: 10px 0;
+      font-size: 16px;
+      color: #333;
+    }
+
+    .popup-content button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -106,8 +149,18 @@
   </label>
 
   <button type="submit">Register</button>
-  <div class="success" id="successMsg"></div>
 </form>
+
+<!-- Confirmation Popup -->
+<div id="confirmationPopup">
+  <div class="popup-content">
+    <img src="logo.jpg" alt="Club Logo" />
+    <h3>🎉 Supporter Registered!</h3>
+    <p id="popupName"></p>
+    <div class="motto">One Team, One Dream</div>
+    <button onclick="closePopup()">Close</button>
+  </div>
+</div>
 
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -147,12 +200,10 @@
     localData.push(entry);
     localStorage.setItem("supporterRecords", JSON.stringify(localData));
 
-    // Save to Firebase and generate certificate
+    // Save to Firebase
     db.ref("supporterRecords/" + entry.id).set(entry)
       .then(() => {
-        document.getElementById("successMsg").textContent = "Supporter registered successfully!";
-        e.target.reset();
-        setTimeout(() => document.getElementById("successMsg").textContent = "", 3000);
+        document.getElementById("supporterForm").reset();
         generateCertificate(entry);
       })
       .catch(err => {
@@ -160,6 +211,7 @@
       });
   });
 
+  // Create PDF and show popup
   function generateCertificate(entry) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'landscape' });
@@ -168,7 +220,7 @@
     doc.rect(0, 0, 297, 210, 'F');
 
     const logo = new Image();
-    logo.src = "logo.jpg"; // Must be available in your project directory
+    logo.src = "logo.jpg"; // Ensure logo.jpg exists
 
     logo.onload = () => {
       doc.addImage(logo, 'JPEG', 125, 15, 45, 45);
@@ -203,10 +255,10 @@
       doc.setFont('courier', 'bolditalic');
       doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
 
+      // Silent download
       const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
       const blob = doc.output("blob");
       const url = URL.createObjectURL(blob);
-
       const a = document.createElement("a");
       a.href = url;
       a.download = fileName;
@@ -216,8 +268,14 @@
       URL.revokeObjectURL(url);
       a.remove();
 
-      alert(`🎉 Congratulations, ${entry.name}! Your supporter certificate has been downloaded successfully.`);
+      // Show custom confirmation popup
+      document.getElementById("popupName").innerText = entry.name + " has been registered.";
+      document.getElementById("confirmationPopup").style.display = "flex";
     };
+  }
+
+  function closePopup() {
+    document.getElementById("confirmationPopup").style.display = "none";
   }
 </script>
 
