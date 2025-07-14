@@ -4,15 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>View Records</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f9f9f9;
       padding: 20px;
     }
-    h2 {
+    .logo-header {
       text-align: center;
       margin-bottom: 10px;
+    }
+    .logo-header img {
+      width: 100px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin: 10px 0 20px;
     }
     .tabs {
       display: flex;
@@ -52,6 +62,7 @@
       border: 1px solid #ddd;
       padding: 8px;
       font-size: 14px;
+      text-align: left;
     }
     th {
       background-color: #f0f0f0;
@@ -64,6 +75,13 @@
       border: none;
       cursor: pointer;
     }
+    .delete-btn {
+      background: #f44336;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
   </style>
 
   <!-- Firebase SDKs -->
@@ -71,6 +89,10 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
+
+<div class="logo-header">
+  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" />
+</div>
 
 <h2>View Records</h2>
 
@@ -107,6 +129,7 @@
   let currentTab = 'gate';
   let allGateData = [];
   let allSupporterData = [];
+  const currentUser = localStorage.getItem("loggedInUser");
 
   function switchTab(tab) {
     currentTab = tab;
@@ -135,6 +158,8 @@
     const tbody = document.querySelector("#recordTable tbody");
     tbody.innerHTML = "";
 
+    const data = currentTab === 'gate' ? allGateData : allSupporterData;
+
     if (currentTab === 'gate') {
       thead.innerHTML = `
         <tr>
@@ -146,8 +171,9 @@
           <th>Method</th>
           <th>Date</th>
           <th>Served By</th>
+          ${currentUser === "admin" ? "<th>Action</th>" : ""}
         </tr>`;
-      allGateData.forEach(rec => {
+      data.forEach((rec, index) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${rec.receiptNo}</td>
@@ -158,6 +184,7 @@
           <td>${rec.method}</td>
           <td>${rec.date}</td>
           <td>${rec.servedBy}</td>
+          ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteRecord('${rec.receiptNo}', ${index}, 'gate')">Delete</button></td>` : ""}
         `;
         tbody.appendChild(row);
       });
@@ -172,8 +199,9 @@
           <th>Location</th>
           <th>Membership</th>
           <th>Created By</th>
+          ${currentUser === "admin" ? "<th>Action</th>" : ""}
         </tr>`;
-      allSupporterData.forEach(rec => {
+      data.forEach((rec, index) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${rec.id}</td>
@@ -184,10 +212,29 @@
           <td>${rec.location}</td>
           <td>${rec.membership}</td>
           <td>${rec.createdBy}</td>
+          ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteRecord('${rec.id}', ${index}, 'supporter')">Delete</button></td>` : ""}
         `;
         tbody.appendChild(row);
       });
     }
+  }
+
+  function deleteRecord(id, index, type) {
+    if (!confirm("Are you sure you want to delete this record?")) return;
+
+    const refPath = type === 'gate' ? `gateFeeRecords/${id}` : `supporterRecords/${id}`;
+    db.ref(refPath).remove();
+
+    if (type === 'gate') {
+      allGateData.splice(index, 1);
+      localStorage.setItem("gateFeeRecords", JSON.stringify(allGateData));
+    } else {
+      allSupporterData.splice(index, 1);
+      localStorage.setItem("supportersData", JSON.stringify(allSupporterData));
+    }
+
+    alert("Record deleted!");
+    renderTable();
   }
 
   function filterTable() {
@@ -196,10 +243,9 @@
     tbody.innerHTML = "";
 
     const data = currentTab === 'gate' ? allGateData : allSupporterData;
-
     const filtered = data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(term)));
 
-    filtered.forEach(rec => {
+    filtered.forEach((rec, index) => {
       const row = document.createElement("tr");
       if (currentTab === 'gate') {
         row.innerHTML = `
@@ -211,6 +257,7 @@
           <td>${rec.method}</td>
           <td>${rec.date}</td>
           <td>${rec.servedBy}</td>
+          ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteRecord('${rec.receiptNo}', ${index}, 'gate')">Delete</button></td>` : ""}
         `;
       } else {
         row.innerHTML = `
@@ -222,6 +269,7 @@
           <td>${rec.location}</td>
           <td>${rec.membership}</td>
           <td>${rec.createdBy}</td>
+          ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteRecord('${rec.id}', ${index}, 'supporter')">Delete</button></td>` : ""}
         `;
       }
       tbody.appendChild(row);
