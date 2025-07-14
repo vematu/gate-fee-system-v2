@@ -49,20 +49,27 @@
   </style>
 </head>
 <body>
-<img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo{
-  width: 120px;
-  max-height: 120px;
-  object-fit: contain;
-  display: block;
-  margin: 20px auto;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  border-radius: 10px;
-}
+<body>
+  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo centered-logo" />
 
-.centered-logo {
-  display: block;
-  margin: 20px auto;
-} centered-logo" />
+  <h2>Add New User</h2>
+
+  <form id="addUserForm">
+    <label>Username:
+      <input type="text" id="username" required />
+    </label>
+    <label>Password:
+      <input type="password" id="password" required />
+    </label>
+    <label>Phone Number:
+      <input type="tel" id="phone" required />
+    </label>
+    <label>Email Address:
+      <input type="email" id="email" required />
+    </label>
+    <button type="submit">Add User</button>
+    <div id="statusMsg"></div>
+  </form>
 
 <h2>Add New User</h2>
 
