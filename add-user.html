@@ -51,7 +51,6 @@
 </head>
 <body>
 
-  <!-- Correct logo with class -->
   <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo centered-logo" />
 
   <h2>Add New User</h2>
@@ -74,11 +73,12 @@
   </form>
 
   <script>
-    let users = JSON.parse(localStorage.getItem("users") || "{}");
-    const currentUser = localStorage.getItem("loggedInUser") || "admin";
+    const currentUser = localStorage.getItem("loggedInUser") || "";
+    const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
 
     if (currentUser !== "admin") {
       alert("Access denied. Admin only.");
+      window.location.href = "index.html";
     }
 
     document.getElementById("addUserForm").addEventListener("submit", function(e) {
@@ -94,8 +94,8 @@
         return;
       }
 
-      users[username] = { password, phone, email };
-      localStorage.setItem("users", JSON.stringify(users));
+      users[username] = { password, phone, contact: email };
+      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
 
       document.getElementById("statusMsg").style.color = "green";
       document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
