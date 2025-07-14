@@ -1,4 +1,131 @@
-body { font-family: Arial, sans-serif; ...CSS CONTENT HERE... }
+/* GLOBAL STYLES */
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+button {
+  padding: 10px 15px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #388e3c;
+}
+
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* MENU BUTTONS */
+.menu {
+  display: grid;
+  gap: 15px;
+}
+
+.menu button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 16px;
+  padding: 15px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.menu button:hover {
+  background: #388e3c;
+}
+
+.menu i {
+  font-size: 20px;
+  width: 25px;
+  text-align: center;
+}
+
+.logout {
+  background: #f44336;
+}
+
+.logout:hover {
+  background: #d32f2f;
+}
+
+/* FORMS */
+form {
+  background: #fff;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+label {
+  display: block;
+  margin-top: 10px;
+}
+
+.success {
+  text-align: center;
+  color: green;
+  margin-top: 15px;
+}
+
+/* TABLES */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+}
+
+th {
+  background: #f2f2f2;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+}
+
+/* LOGO STYLES */
+
+/* Centered large logo for login/register pages */
 .logo-banner {
   display: block;
   margin: 0 auto 20px auto;
@@ -7,6 +134,7 @@ body { font-family: Arial, sans-serif; ...CSS CONTENT HERE... }
   box-shadow: 0 0 8px rgba(0,0,0,0.1);
 }
 
+/* Small logo beside heading (e.g., dashboard) */
 .logo-header {
   max-width: 60px;
   height: auto;
@@ -14,6 +142,7 @@ body { font-family: Arial, sans-serif; ...CSS CONTENT HERE... }
   vertical-align: middle;
 }
 
+/* Fixed bottom corner logo (for background branding) */
 .logo-fixed {
   position: fixed;
   bottom: 10px;
