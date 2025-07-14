@@ -1,44 +1,12 @@
-/* General body styling */
+/* ==== General Styling ==== */
 body {
   font-family: Arial, sans-serif;
-  background: #f2f2f2;
   margin: 0;
   padding: 0;
+  background: #f0f2f5;
 }
 
-/* Centered logo styling for login and register pages */
-.logo-centered {
-  display: block;
-  margin: 30px auto 20px auto;
-  max-width: 120px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border-radius: 50%;
-}
-
-/* Top-left logo for dashboard and main pages */
-.logo-top-left {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-/* Bottom corner watermark logo for data/view pages */
-.logo-watermark {
-  position: fixed;
-  bottom: 10px;
-  right: 10px;
-  width: 50px;
-  opacity: 0.3;
-  pointer-events: none;
-  z-index: 10;
-}
-
-/* Container styling (used in many forms/pages) */
+/* ==== Container Styling ==== */
 .container {
   max-width: 500px;
   margin: 40px auto;
@@ -48,56 +16,98 @@ body {
   box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Button styling */
+/* ==== Buttons ==== */
 button {
+  font-size: 16px;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
   background-color: #4CAF50;
   color: white;
-  border: none;
-  padding: 12px 20px;
-  font-size: 16px;
   cursor: pointer;
-  border-radius: 8px;
-  margin-top: 15px;
-  transition: background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: #388E3C;
+  background-color: #388e3c;
 }
 
-/* Table styling for data pages */
+/* ==== Logout Button ==== */
+.logout {
+  background-color: #f44336;
+}
+
+.logout:hover {
+  background-color: #d32f2f;
+}
+
+/* ==== Table Styling ==== */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 20px;
 }
 
-th, td {
+table, th, td {
   border: 1px solid #ccc;
   padding: 8px;
-  text-align: left;
 }
 
 th {
   background-color: #f2f2f2;
 }
 
-/* Input and label spacing */
-label {
-  display: block;
-  margin-top: 10px;
-}
-
-input, select {
+/* ==== Input Styling ==== */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="email"],
+select {
   width: 100%;
   padding: 10px;
   margin-top: 5px;
   font-size: 16px;
 }
 
-/* Success message */
-.success {
-  text-align: center;
-  color: green;
-  margin-top: 15px;
+/* ==== Logo Styling ==== */
+
+/* 1. Centered Logo - for login/register pages */
+.logo-centered {
+  display: block;
+  margin: 30px auto 20px;
+  max-width: 140px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.2);
+  border-radius: 10px;
+}
+
+/* 2. Top Left Logo with Title - for dashboard/index.html */
+.logo-top-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+}
+
+.logo-top-left img {
+  width: 60px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
+}
+
+.logo-top-left h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #333;
+}
+
+/* 3. Fixed Corner Logo (semi-transparent) - for forms/data pages */
+.logo-fixed-corner {
+  position: fixed;
+  bottom: 15px;
+  right: 15px;
+  width: 60px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 999;
 }
