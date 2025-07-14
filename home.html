@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Dashboard - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <style>
     body {
@@ -22,9 +23,26 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .header-logo img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .header-logo h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #333;
     }
 
     .user-info {
@@ -80,7 +98,12 @@
   </script>
 
   <div class="container">
-    <h2>Gate Fee System</h2>
+    <!-- Logo and Title -->
+    <div class="header-logo">
+      <img src="logo.jpg" alt="Club Logo" />
+      <h2>Kakumiro Junior FC</h2>
+    </div>
+
     <div class="user-info">
       <p>Welcome, <strong id="usernameDisplay"></strong></p>
     </div>
