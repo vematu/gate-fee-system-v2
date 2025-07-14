@@ -4,55 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Register Supporter</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
-      background: #e9f5f2;
+      background: #f2f2f2;
     }
 
     form {
       background: #fff;
-      padding: 25px;
+      padding: 20px;
       max-width: 600px;
       margin: auto;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
     h2 {
       text-align: center;
-      margin-bottom: 20px;
-      font-family: 'Georgia', serif;
-      color: #2e7d32;
     }
 
     label {
       display: block;
-      margin-top: 12px;
-      font-weight: bold;
+      margin-top: 10px;
     }
 
     input, select {
       width: 100%;
       padding: 10px;
-      margin-top: 6px;
+      margin-top: 5px;
       font-size: 16px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
     }
 
     button {
       width: 100%;
-      padding: 14px;
+      padding: 12px;
       background: #4CAF50;
       color: white;
       font-size: 16px;
       border: none;
-      margin-top: 25px;
+      margin-top: 20px;
       cursor: pointer;
-      border-radius: 6px;
     }
 
     button:hover {
@@ -63,9 +55,68 @@
       text-align: center;
       color: green;
       margin-top: 15px;
+    }
+
+    #confirmationPopup {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #confirmationPopup .popup-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 90%;
+    }
+
+    #confirmationPopup img {
+      width: 80px;
+      margin-bottom: 15px;
+    }
+
+    #confirmationPopup h3 {
+      color: green;
+      margin-bottom: 10px;
+    }
+
+    #confirmationPopup p {
+      font-size: 18px;
       font-weight: bold;
     }
+
+    #confirmationPopup .motto {
+      font-style: italic;
+      font-size: 16px;
+      color: #555;
+    }
+
+    #confirmationPopup button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #confirmationPopup button:hover {
+      background: #388e3c;
+    }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -109,9 +160,16 @@
   <div class="success" id="successMsg"></div>
 </form>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<!-- Confirmation Popup -->
+<div id="confirmationPopup">
+  <div class="popup-content">
+    <img src="logo.jpg" alt="Club Logo" />
+    <h3>🎉 Supporter Registered!</h3>
+    <p id="popupName"></p>
+    <div class="motto">One Team, One Dream</div>
+    <button onclick="closePopup()">Close</button>
+  </div>
+</div>
 
 <script>
   const firebaseConfig = {
@@ -126,6 +184,7 @@
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
+
   const localData = JSON.parse(localStorage.getItem("supporterRecords") || "[]");
 
   document.getElementById("supporterForm").addEventListener("submit", function(e) {
@@ -143,73 +202,29 @@
       createdBy: localStorage.getItem("loggedInUser") || "unknown"
     };
 
-    // Save locally
     localData.push(entry);
     localStorage.setItem("supporterRecords", JSON.stringify(localData));
 
-    // Save to Firebase
     db.ref("supporterRecords/" + entry.id).set(entry)
       .then(() => {
-        document.getElementById("successMsg").textContent = "Supporter registered successfully!";
+        document.getElementById("successMsg").textContent = "Supporter registered and synced!";
         e.target.reset();
-        setTimeout(() => document.getElementById("successMsg").textContent = "", 3000);
-        generateCertificate(entry); // Trigger certificate generation
+
+        // Show confirmation popup
+        document.getElementById("popupName").innerText = `${entry.name} has been added as a supporter!`;
+        document.getElementById("confirmationPopup").style.display = "flex";
+
+        setTimeout(() => {
+          document.getElementById("successMsg").textContent = "";
+        }, 3000);
       })
       .catch(err => {
         alert("Saved locally. Sync failed: " + err.message);
       });
   });
 
-  // Generate Certificate PDF
-  function generateCertificate(entry) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape' });
-
-    // Background
-    doc.setFillColor(240, 255, 240);
-    doc.rect(0, 0, 297, 210, 'F');
-
-    // Logo
-    const logo = new Image();
-    logo.src = "logo.jpg";
-    logo.onload = () => {
-      doc.addImage(logo, 'JPEG', 125, 15, 45, 45);
-
-      doc.setFontSize(24);
-      doc.setTextColor(34, 85, 34);
-      doc.setFont('times', 'bold');
-      doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
-
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'normal');
-      doc.text("Membership Certificate", 148, 85, null, null, 'center');
-
-      doc.setFontSize(14);
-      doc.text(`This is to certify that`, 148, 100, null, null, 'center');
-
-      doc.setFontSize(18);
-      doc.setFont('times', 'bolditalic');
-      doc.text(entry.name, 148, 115, null, null, 'center');
-
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
-
-      doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
-
-      doc.setFontSize(12);
-      doc.setTextColor(120);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
-
-      // Stylish motto
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('courier', 'bolditalic');
-      doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
-
-      // Save PDF
-      doc.save(`KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`);
-    };
+  function closePopup() {
+    document.getElementById("confirmationPopup").style.display = "none";
   }
 </script>
 
