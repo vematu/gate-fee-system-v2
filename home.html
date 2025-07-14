@@ -86,16 +86,42 @@
     .logout:hover {
       background: #d32f2f;
     }
+
+    /* NEW: Floating settings icon for admin */
+    .settings-icon {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      color: #4CAF50;
+      background: white;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      z-index: 999;
+    }
+
+    .settings-icon a {
+      color: inherit;
+      text-decoration: none;
+    }
   </style>
 </head>
 <body>
 
+  <!-- Redirect to login if not logged in -->
   <script>
     const loggedInUser = localStorage.getItem("loggedInUser");
     if (!loggedInUser) {
       window.location.href = "login.html";
     }
   </script>
+
+  <!-- Admin-only settings icon -->
+  <div class="settings-icon" id="settingsIcon">
+    <a href="settings.html" title="Admin Settings"><i class="fas fa-cog"></i></a>
+  </div>
 
   <div class="container">
     <!-- Logo and Title -->
@@ -124,6 +150,14 @@
       localStorage.removeItem("loggedInUser");
       window.location.href = "login.html";
     }
+
+    // Show settings icon if logged in user is admin
+    window.onload = () => {
+      const user = localStorage.getItem("loggedInUser");
+      if (user === "admin") {
+        document.getElementById("settingsIcon").style.display = "block";
+      }
+    };
   </script>
 
 </body>
