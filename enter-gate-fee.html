@@ -130,21 +130,27 @@
 
     async function bluetoothPrint(entry) {
       const text = `
-KAKUMIRO JUNIOR FC
-EST. 2020
-GATE RECEIPT
+============================
+       KAKUMIRO JUNIOR FC
+           EST. 2020
+         GATE RECEIPT
+============================
 
 Receipt No: ${entry.receiptNo}
-Name: ${entry.name || '-'}
-Phone: ${entry.phone || '-'}
-Event: ${entry.event}
-Amount: UGX ${entry.amount}
-Method: ${entry.method}
-Date: ${entry.date}
-Served By: ${entry.servedBy}
+Name      : ${entry.name || '-'}
+Phone     : ${entry.phone || '-'}
+Event     : ${entry.event}
+Amount    : UGX ${entry.amount}
+Method    : ${entry.method}
+Date      : ${entry.date}
+Served By : ${entry.servedBy}
 
-One Team, One Dream
-\n\n\n`;
+============================
+  One Team, One Dream
+============================
+
+
+\n\n\n`; // Paper feed for tear-off
 
       const encoder = new TextEncoder();
       const data = encoder.encode(text);
@@ -158,11 +164,12 @@ One Team, One Dream
         const writer = savedPort.writable.getWriter();
         await writer.write(data);
         writer.releaseLock();
+
         console.log("Printed successfully.");
       } catch (err) {
         console.error("Printing failed:", err.message);
-        alert("Failed to print: " + err.message);
-        savedPort = null; // Reset if failed
+        alert("Bluetooth Print Failed: " + err.message);
+        savedPort = null;
       }
     }
   </script>
