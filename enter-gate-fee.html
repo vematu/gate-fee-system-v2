@@ -7,20 +7,81 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .logo-top { display: block; margin: 0 auto 20px; width: 120px; max-height: 120px; object-fit: contain; box-shadow: 0 0 8px rgba(0,0,0,0.2); border-radius: 10px; }
-    form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 10px; margin-top: 5px; }
-    button { width: 100%; padding: 12px; margin-top: 15px; background: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
-    .receipt { max-width: 500px; margin: 20px auto; padding: 20px; border: 2px dashed #000; background: #fff; display: none; position: relative; text-align: center; }
-    .receipt-logo img { max-width: 80px; margin-bottom: 10px; }
-    .team-motto { font-family: 'Georgia', serif; font-weight: bold; font-size: 16px; margin-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .logo-top {
+      display: block;
+      margin: 0 auto 20px;
+      width: 120px;
+      max-height: 120px;
+      object-fit: contain;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      border-radius: 10px;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .receipt {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      border: 2px dashed #000;
+      background: #fff;
+      display: none;
+      position: relative;
+      text-align: center;
+    }
+    .receipt-logo img {
+      max-width: 80px;
+      margin-bottom: 10px;
+    }
+    .team-motto {
+      font-family: 'Edwardian Script ITC', cursive;
+      font-weight: bold;
+      font-size: 22px;
+      margin-top: 25px;
+      text-align: center;
+    }
     @media print {
       body * { visibility: hidden; }
       .receipt, .receipt * { visibility: visible; }
-      .receipt { position: absolute; top: 0; left: 0; width: 100%; }
+      .receipt {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+      }
     }
   </style>
 </head>
@@ -150,7 +211,7 @@ Served By : ${entry.servedBy}
 ============================
 
 
-\n\n\n`; // Paper feed for tear-off
+\n\n\n`; // Paper feed
 
       const encoder = new TextEncoder();
       const data = encoder.encode(text);
