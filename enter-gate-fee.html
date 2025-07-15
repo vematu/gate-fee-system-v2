@@ -7,82 +7,20 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo-top {
-      display: block;
-      margin: 0 auto 20px;
-      width: 120px;
-      max-height: 120px;
-      object-fit: contain;
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
-      border-radius: 10px;
-    }
-    form {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    .receipt {
-      max-width: 500px;
-      margin: 20px auto;
-      padding: 20px;
-      border: 2px dashed #000;
-      background: #fff;
-      display: none;
-      position: relative;
-      text-align: center;
-    }
-    .receipt-logo img {
-      max-width: 80px;
-      margin-bottom: 10px;
-    }
-    .team-motto {
-      font-family: 'Georgia', serif;
-      font-weight: bold;
-      font-size: 16px;
-      margin-top: 20px;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .logo-top { display: block; margin: 0 auto 20px; width: 120px; max-height: 120px; object-fit: contain; box-shadow: 0 0 8px rgba(0,0,0,0.2); border-radius: 10px; }
+    form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; }
+    button { width: 100%; padding: 12px; margin-top: 15px; background: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
+    .receipt { max-width: 500px; margin: 20px auto; padding: 20px; border: 2px dashed #000; background: #fff; display: none; position: relative; text-align: center; }
+    .receipt-logo img { max-width: 80px; margin-bottom: 10px; }
+    .team-motto { font-family: 'Georgia', serif; font-weight: bold; font-size: 16px; margin-top: 20px; }
     @media print {
       body * { visibility: hidden; }
-      .receipt, .receipt * {
-        visibility: visible;
-      }
-      .receipt {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-      }
+      .receipt, .receipt * { visibility: visible; }
+      .receipt { position: absolute; top: 0; left: 0; width: 100%; }
     }
   </style>
 </head>
@@ -93,18 +31,10 @@
   <h2>Kakumiro Junior Gate Collection</h2>
 
   <form id="gateForm">
-    <label>Full Name:
-      <input type="text" name="fullName" />
-    </label>
-    <label>Phone Number:
-      <input type="tel" name="phone" />
-    </label>
-    <label>Event Name:
-      <input type="text" name="eventName" required />
-    </label>
-    <label>Amount Paid (UGX):
-      <input type="number" name="amount" required />
-    </label>
+    <label>Full Name: <input type="text" name="fullName" /></label>
+    <label>Phone Number: <input type="tel" name="phone" /></label>
+    <label>Event Name: <input type="text" name="eventName" required /></label>
+    <label>Amount Paid (UGX): <input type="number" name="amount" required /></label>
     <label>Payment Method:
       <select name="paymentMethod" required>
         <option>Cash</option>
@@ -112,22 +42,18 @@
         <option>Card</option>
       </select>
     </label>
-    <label>Date of Payment:
-      <input type="date" name="paymentDate" id="paymentDate" required />
-    </label>
-    <label>Signature of Payer:
-      <input type="text" name="signature" />
-    </label>
-
+    <label>Date of Payment: <input type="date" name="paymentDate" id="paymentDate" required /></label>
+    <label>Signature of Payer: <input type="text" name="signature" /></label>
     <button type="submit">Submit & Print</button>
   </form>
 
   <div class="receipt" id="receiptBox"></div>
 
   <script>
-    // Set today's date automatically
+    // Set today's date
     document.getElementById("paymentDate").valueAsDate = new Date();
 
+    // Firebase setup
     const firebaseConfig = {
       apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
       authDomain: "gate-fee-system.firebaseapp.com",
@@ -142,9 +68,9 @@
 
     let counter = 1;
     let savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-    if (savedFees.length > 0) {
-      counter = savedFees.length + 1;
-    }
+    if (savedFees.length > 0) counter = savedFees.length + 1;
+
+    let savedPort = null; // for reusing printer
 
     document.getElementById("gateForm").addEventListener("submit", async function(e) {
       e.preventDefault();
@@ -184,9 +110,7 @@
     function showReceipt(entry) {
       const box = document.getElementById("receiptBox");
       box.innerHTML = `
-        <div class="receipt-logo">
-          <img src="logo.jpg" alt="Club Logo" />
-        </div>
+        <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
         <h3>KAKUMIRO JUNIOR FC</h3>
         <p><strong>EST. 2020</strong></p>
         <p style="font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
@@ -220,21 +144,25 @@ Date: ${entry.date}
 Served By: ${entry.servedBy}
 
 One Team, One Dream
-`;
+\n\n\n`;
+
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
 
       try {
-        const device = await navigator.bluetooth.requestDevice({
-          acceptAllDevices: true,
-          optionalServices: [0x1101]
-        });
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(0x1101);
-        const characteristic = await service.getCharacteristic(0x2a56);
-        const encoder = new TextEncoder();
-        await characteristic.writeValue(encoder.encode(text));
-        alert("Printed via Bluetooth!");
+        if (!savedPort) {
+          savedPort = await navigator.serial.requestPort();
+          await savedPort.open({ baudRate: 9600 });
+        }
+
+        const writer = savedPort.writable.getWriter();
+        await writer.write(data);
+        writer.releaseLock();
+        console.log("Printed successfully.");
       } catch (err) {
-        console.warn("Bluetooth print failed or skipped:", err.message);
+        console.error("Printing failed:", err.message);
+        alert("Failed to print: " + err.message);
+        savedPort = null; // Reset if failed
       }
     }
   </script>
