@@ -76,3 +76,28 @@ h2 {
   display: block;
   margin: 20px auto;
 }
+
+.top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #4CAF50;
+  display: flex;
+  justify-content: space-around;
+  padding: 12px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.top-nav a {
+  color: white;
+  font-size: 18px;
+  text-align: center;
+  flex: 1;
+}
+
+.top-nav a:hover {
+  background: #388E3C;
+  border-radius: 5px;
+}
