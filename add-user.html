@@ -10,22 +10,19 @@
     body {
       font-family: Arial, sans-serif;
       max-width: 400px;
-      margin: 40px auto;
+      margin: 60px auto 40px;
       background: #f9f9f9;
       padding: 20px;
       border-radius: 10px;
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
     }
-
     label {
       display: block;
       margin-top: 10px;
     }
-
     input {
       width: 100%;
       padding: 10px;
@@ -33,7 +30,6 @@
       font-size: 16px;
       box-sizing: border-box;
     }
-
     button {
       margin-top: 20px;
       width: 100%;
@@ -44,41 +40,56 @@
       font-size: 16px;
       cursor: pointer;
     }
-
     button:hover {
       background: #388E3C;
     }
-
     #statusMsg {
       margin-top: 15px;
       text-align: center;
       color: green;
     }
 
-    .page-logo {
-      width: 100px;
-      max-height: 100px;
-      display: block;
-      margin: 0 auto 20px;
-      object-fit: contain;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-      border-radius: 10px;
+    .top-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #4CAF50;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+    .top-nav a {
+      color: white;
+      font-size: 18px;
+      text-align: center;
+      flex: 1;
+    }
+    .top-nav a:hover {
+      background: #388E3C;
+      border-radius: 5px;
+    }
+
+    body {
+      padding-top: 60px;
     }
   </style>
 </head>
 <body>
-  
-<!-- Top Navigation -->
-<div class="top-nav">
-  <a href="home.html" title="Home"><i class="fas fa-home"></i></a>
-  <a href="enter-gate-fee.html" title="Enter Fee"><i class="fas fa-cash-register"></i></a>
-  <a href="view-data.html" title="View Records"><i class="fas fa-table"></i></a>
-  <a href="register-supporter.html" title="Supporters"><i class="fas fa-users"></i></a>
-  <a href="add-user.html" title="Add User"><i class="fas fa-user-plus"></i></a>
-  <a id="settingsIcon" href="settings.html" title="Settings" style="display: none;"><i class="fas fa-cog"></i></a>
-</div>
 
-  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo" />
+  <!-- TOP NAV -->
+  <div class="top-nav">
+    <a href="home.html"><i class="fas fa-home"></i></a>
+    <a href="enter-gate-fee.html"><i class="fas fa-cash-register"></i></a>
+    <a href="view-data.html"><i class="fas fa-table"></i></a>
+    <a href="register-supporter.html"><i class="fas fa-users"></i></a>
+    <a href="add-user.html"><i class="fas fa-user-plus"></i></a>
+    <a id="settingsIcon" href="settings.html"><i class="fas fa-cog"></i></a>
+  </div>
+
+  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo centered-logo" />
 
   <h2>Add New User</h2>
 
@@ -99,10 +110,9 @@
     <div id="statusMsg"></div>
   </form>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase Setup -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
@@ -117,6 +127,8 @@
     const db = firebase.database();
 
     const currentUser = localStorage.getItem("loggedInUser") || "";
+    const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+
     if (currentUser !== "admin") {
       alert("Access denied. Admin only.");
       window.location.href = "index.html";
@@ -129,32 +141,28 @@
       const phone = document.getElementById("phone").value.trim();
       const email = document.getElementById("email").value.trim();
 
-      const userData = { password, phone, contact: email };
-
-      const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
       if (users[username]) {
         document.getElementById("statusMsg").style.color = "red";
         document.getElementById("statusMsg").textContent = "User already exists.";
         return;
       }
 
-      // Save to localStorage
+      const userData = { password, phone, contact: email };
       users[username] = userData;
       localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      db.ref("users/" + username).set(userData);
 
-      // Save to Firebase
-      db.ref("users/" + username).set(userData)
-        .then(() => {
-          document.getElementById("statusMsg").style.color = "green";
-          document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
-          e.target.reset();
-        })
-        .catch(error => {
-          document.getElementById("statusMsg").style.color = "red";
-          document.getElementById("statusMsg").textContent = "Failed to save to database.";
-          console.error(error);
-        });
+      document.getElementById("statusMsg").style.color = "green";
+      document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
+      e.target.reset();
     });
+
+    // Only show settings icon for admin
+    const user = localStorage.getItem("loggedInUser");
+    if (user === "admin") {
+      const settingsIcon = document.getElementById("settingsIcon");
+      if (settingsIcon) settingsIcon.style.display = "block";
+    }
   </script>
 
 </body>
