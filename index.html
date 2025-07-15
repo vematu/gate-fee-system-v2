@@ -3,107 +3,95 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Welcome - Kakumiro Junior FC</title>
+  <title>Dashboard - Gate Fee System</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <!-- Decorative Font -->
-  <link href="https://fonts.googleapis.com/css2?family=UnifrakturCook:wght@700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f2f5;
       margin: 0;
       padding: 0;
-    }
-
-    .header {
-      background: #4CAF50;
-      color: white;
-      padding: 10px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .header-title {
-      font-family: 'UnifrakturCook', 'Old English Text MT', cursive;
-      font-size: 22px;
-    }
-
-    .login-icon {
-      font-size: 20px;
-      cursor: pointer;
-    }
-
-    .page-logo {
-      width: 120px;
-      max-height: 120px;
-      object-fit: contain;
-      display: block;
-      margin: 25px auto 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      border-radius: 10px;
+      background: #f0f2f5;
     }
 
     .container {
       max-width: 500px;
-      margin: 10px auto 60px;
+      margin: 40px auto;
+      padding: 20px;
       background: white;
-      padding: 30px;
-      border-radius: 10px;
+      border-radius: 15px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
 
-    h2 {
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .header-logo img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .header-logo h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #333;
+    }
+
+    .user-info {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
-    label {
-      display: block;
-      margin-top: 15px;
+    .menu {
+      display: grid;
+      gap: 15px;
     }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-    }
-
-    button {
-      margin-top: 20px;
-      padding: 12px;
+    .menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      padding: 15px;
       background: #4CAF50;
       color: white;
       border: none;
-      width: 100%;
-      font-size: 16px;
+      border-radius: 10px;
       cursor: pointer;
+      transition: background 0.3s ease;
     }
 
-    button:hover {
+    .menu button:hover {
       background: #388e3c;
     }
 
-    .link {
-      margin-top: 15px;
+    .menu i {
+      font-size: 20px;
+      width: 25px;
       text-align: center;
     }
 
-    .link a {
-      color: #007BFF;
-      cursor: pointer;
-      text-decoration: underline;
+    .logout {
+      background: #f44336;
     }
 
-    #resetForm {
-      display: none;
-      margin-top: 30px;
-      border-top: 1px solid #ccc;
-      padding-top: 20px;
+    .logout:hover {
+      background: #d32f2f;
     }
 
+    /* Floating settings icon */
     .settings-icon {
+      display: none;
       position: fixed;
       top: 15px;
       right: 15px;
@@ -120,135 +108,209 @@
       color: inherit;
       text-decoration: none;
     }
+
+    /* Slide-in Settings Modal */
+    .settings-modal {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 360px;
+      height: 100%;
+      background: #fff;
+      box-shadow: -3px 0 15px rgba(0, 0, 0, 0.2);
+      padding: 20px;
+      transition: right 0.3s ease;
+      z-index: 1000;
+      overflow-y: auto;
+      border-left: 3px solid #4CAF50;
+    }
+
+    .settings-modal.open {
+      right: 0;
+    }
+
+    .settings-content h3, .settings-content h4 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .settings-content input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    .settings-content button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    .settings-content .note {
+      font-size: 13px;
+      color: #a00;
+      margin-top: 8px;
+    }
+
+    .close-settings {
+      position: absolute;
+      top: 12px;
+      right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+      color: #aaa;
+    }
+
+    .role-display {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #2e7d32;
+    }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="header-title">One Team, One Dream</div>
-    <div class="login-icon" title="Switch user / Log in again"><i class="fas fa-user-circle"></i></div>
-  </div>
+  <!-- Redirect to login if not logged in -->
+  <script>
+    const loggedInUser = localStorage.getItem("loggedInUser");
+    if (!loggedInUser) {
+      window.location.href = "login.html";
+    }
+  </script>
 
-  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo" />
+  <!-- Floating Settings Icon (only for admin) -->
+  <div class="settings-icon" id="settingsIcon">
+    <i class="fas fa-cog" title="Settings"></i>
+  </div>
 
   <div class="container">
-    <h2>Welcome to the Kakumiro Junior FC System</h2>
-
-    <label>Username:
-      <input type="text" id="username" />
-    </label>
-    <label>Password:
-      <input type="password" id="password" />
-    </label>
-    <button onclick="login()">Login</button>
-
-    <div class="link">
-      <a onclick="showReset()">Forgot Password?</a>
+    <!-- Logo and Title -->
+    <div class="header-logo">
+      <img src="logo.jpg" alt="Club Logo" />
+      <h2>Kakumiro Junior FC</h2>
     </div>
 
-    <div id="resetForm">
-      <h3>Reset Password</h3>
-      <label>Username: <input type="text" id="resetUsername" /></label>
-      <label>Email/Phone: <input type="text" id="resetContact" /></label>
-      <label>New Password: <input type="password" id="resetPassword" /></label>
-      <button onclick="resetPassword()">Reset Password</button>
+    <div class="user-info">
+      <p>Welcome, <strong id="usernameDisplay"></strong></p>
+    </div>
+
+    <div class="menu">
+      <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
+      <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
+      <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
+      <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
+      <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <!-- Settings Side Modal -->
+  <div id="settingsModal" class="settings-modal">
+    <div class="settings-content">
+      <span class="close-settings" onclick="closeSettings()">&times;</span>
+      <h3>⚙️ Settings</h3>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-    authDomain: "gate-fee-system.firebaseapp.com",
-    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-    projectId: "gate-fee-system",
-    storageBucket: "gate-fee-system.appspot.com",
-    messagingSenderId: "35497617973",
-    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-  };
+      <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
+      <!-- Personal Settings -->
+      <h4>👤 Personal Account</h4>
+      <label>Current Password:</label>
+      <input type="password" id="modalCurrentPass" placeholder="Enter current password" />
 
-  function getLocalUsers() {
-    return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
-  }
+      <label>New Password:</label>
+      <input type="password" id="modalNewPass" placeholder="Enter new password" />
 
-  function saveLocalUser(username, userData) {
-    const users = getLocalUsers();
-    users[username] = userData;
-    localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-  }
+      <button onclick="changeUserPassword()">Change Password</button>
 
-  function login() {
-    const uname = document.getElementById("username").value.trim();
-    const pword = document.getElementById("password").value;
-    const users = getLocalUsers();
+      <hr />
 
-    if (users[uname] && users[uname].password === pword) {
-      localStorage.setItem("loggedInUser", uname);
-      alert("Login successful!");
-      window.location.href = "home.html";
-    } else {
-      db.ref("users/" + uname).get().then(snapshot => {
-        if (snapshot.exists()) {
-          const user = snapshot.val();
-          if (user.password === pword) {
-            saveLocalUser(uname, user);
-            localStorage.setItem("loggedInUser", uname);
-            alert("Login successful!");
-            window.location.href = "home.html";
-          } else {
-            alert("Incorrect password.");
-          }
-        } else {
-          alert("User not found.");
-        }
-      });
+      <!-- Admin-only settings -->
+      <div id="adminSettings" style="display: none;">
+        <h4>🛠 Admin Options</h4>
+        <button onclick="syncUsersToFirebase()">Sync All Users</button>
+        <button onclick="clearAllLocalData()">Reset App Data</button>
+        <div class="note">⚠️ This will delete all local data. Use carefully.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+    document.getElementById("usernameDisplay").textContent = localStorage.getItem("loggedInUser");
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "login.html";
     }
-  }
 
-  function resetPassword() {
-    const uname = document.getElementById("resetUsername").value.trim();
-    const contact = document.getElementById("resetContact").value.trim();
-    const newPass = document.getElementById("resetPassword").value;
-
-    db.ref("users/" + uname).get().then(snapshot => {
-      if (snapshot.exists()) {
-        const user = snapshot.val();
-        if (user.contact === contact) {
-          user.password = newPass;
-          db.ref("users/" + uname).set(user);
-          saveLocalUser(uname, user);
-          alert("Password updated successfully!");
-          document.getElementById("resetForm").style.display = "none";
-        } else {
-          alert("Contact does not match.");
-        }
-      } else {
-        alert("User not found.");
+    // Show settings icon only for admin
+    window.onload = () => {
+      const user = localStorage.getItem("loggedInUser");
+      if (user === "admin") {
+        document.getElementById("settingsIcon").style.display = "block";
       }
+    };
+
+    // Open modal
+    document.getElementById("settingsIcon").addEventListener("click", function () {
+      document.getElementById("settingsModal").classList.add("open");
+      const username = localStorage.getItem("loggedInUser");
+      document.getElementById("modalUserRole").textContent = username === "admin" ? "Admin" : "User";
+      document.getElementById("adminSettings").style.display = username === "admin" ? "block" : "none";
     });
-  }
 
-  function showReset() {
-    document.getElementById("resetForm").style.display = "block";
-  }
-
-  window.onload = () => {
-    const users = getLocalUsers();
-    if (!users.admin) {
-      const admin = { password: "admin123", contact: "admin@example.com" };
-      saveLocalUser("admin", admin);
-      db.ref("users/admin").set(admin);
+    // Close modal
+    function closeSettings() {
+      document.getElementById("settingsModal").classList.remove("open");
     }
 
-    // ✅ Remove settings icon injection on login page
-    // This prevents showing settings icon outside admin home
-  };
-</script>
+    // Change password
+    function changeUserPassword() {
+      const username = localStorage.getItem("loggedInUser");
+      const current = document.getElementById("modalCurrentPass").value;
+      const newPass = document.getElementById("modalNewPass").value;
+
+      if (!current || !newPass) {
+        alert("Fill in both password fields.");
+        return;
+      }
+
+      if (users[username] && users[username].password === current) {
+        users[username].password = newPass;
+        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+        alert("Password updated.");
+        document.getElementById("modalCurrentPass").value = "";
+        document.getElementById("modalNewPass").value = "";
+      } else {
+        alert("Incorrect current password.");
+      }
+    }
+
+    // Admin: Sync to Firebase
+    function syncUsersToFirebase() {
+      Object.entries(users).forEach(([username, data]) => {
+        firebase.database().ref("users/" + username).set(data);
+      });
+      alert("Users synced successfully.");
+    }
+
+    // Admin: Clear data
+    function clearAllLocalData() {
+      if (confirm("Are you sure you want to clear all local data?")) {
+        localStorage.clear();
+        alert("Local data cleared.");
+        window.location.href = "login.html";
+      }
+    }
+  </script>
 
 </body>
 </html>
