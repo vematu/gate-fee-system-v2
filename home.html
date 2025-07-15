@@ -301,6 +301,55 @@
     }
   }
 </script>
+<!-- Settings Modal Panel -->
+<div id="settingsModal" class="settings-modal">
+  <div class="settings-content">
+    <span class="close-settings" onclick="closeSettings()">&times;</span>
+    <h3>⚙️ Admin Settings</h3>
+
+    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button onclick="switchTab('account')">👤 My Account</button>
+      <button onclick="switchTab('users')">👥 Manage Users</button>
+      <button onclick="switchTab('system')">🛠 System Settings</button>
+    </div>
+
+    <!-- My Account -->
+    <div id="tab-account" class="tab-section">
+      <h4>Change My Password</h4>
+      <label>Current Password:</label>
+      <input type="password" id="currentPass" />
+      <label>New Password:</label>
+      <input type="password" id="newPass" />
+      <button onclick="changeUserPassword()">Update Password</button>
+    </div>
+
+    <!-- Manage Users (Admin Only) -->
+    <div id="tab-users" class="tab-section" style="display:none;">
+      <h4>User Accounts</h4>
+      <div id="userList"></div>
+      <h4>Add New User</h4>
+      <input type="text" id="newUsername" placeholder="Username" />
+      <input type="text" id="newContact" placeholder="Phone or Email" />
+      <input type="password" id="newPassword" placeholder="Password" />
+      <select id="newRole">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="addNewUser()">Add User</button>
+    </div>
+
+    <!-- System Settings -->
+    <div id="tab-system" class="tab-section" style="display:none;">
+      <h4>System Maintenance</h4>
+      <button onclick="syncUsersToFirebase()">🔁 Sync Users to Firebase</button>
+      <button onclick="clearAllLocalData()">🧹 Reset All Local Data</button>
+      <button onclick="clearLocalUsers()">🗑 Clear Cached Users</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
