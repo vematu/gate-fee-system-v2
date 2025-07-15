@@ -250,35 +250,5 @@
   };
 </script>
 
-<!-- Settings Side Modal -->
-<div id="settingsModal" class="settings-modal">
-  <div class="settings-content">
-    <span class="close-settings" onclick="closeSettings()">&times;</span>
-    <h3>⚙️ Settings</h3>
-
-    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
-
-    <!-- Personal Settings -->
-    <h4>👤 Personal Account</h4>
-    <label>Current Password:</label>
-    <input type="password" id="modalCurrentPass" placeholder="Enter current password" />
-
-    <label>New Password:</label>
-    <input type="password" id="modalNewPass" placeholder="Enter new password" />
-
-    <button onclick="changeUserPassword()">Change Password</button>
-
-    <hr />
-
-    <!-- Admin-only settings -->
-    <div id="adminSettings" style="display: none;">
-      <h4>🛠 Admin Options</h4>
-      <button onclick="syncUsersToFirebase()">Sync All Users</button>
-      <button onclick="clearAllLocalData()">Reset App Data</button>
-      <div class="note">⚠️ This will delete all local data. Use carefully.</div>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
