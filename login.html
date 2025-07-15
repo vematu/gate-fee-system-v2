@@ -90,54 +90,100 @@
     <button onclick="resetPassword()">Reset Password</button>
   </div>
 
-  <script>
-    function getUsers() {
-      return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+ <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  function getLocalUsers() {
+    return JSON.parse(localStorage.getItem("gateSystemUsers") || '{}');
+  }
+
+  function saveLocalUser(username, userData) {
+    const users = getLocalUsers();
+    users[username] = userData;
+    localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+  }
+
+  function login() {
+    const uname = document.getElementById("username").value.trim();
+    const pword = document.getElementById("password").value;
+    const users = getLocalUsers();
+
+    if (users[uname] && users[uname].password === pword) {
+      localStorage.setItem("loggedInUser", uname);
+      alert("Login successful!");
+      window.location.href = "home.html";
+    } else {
+      db.ref("users/" + uname).get().then(snapshot => {
+        if (snapshot.exists()) {
+          const user = snapshot.val();
+          if (user.password === pword) {
+            saveLocalUser(uname, user);
+            localStorage.setItem("loggedInUser", uname);
+            alert("Login successful!");
+            window.location.href = "home.html";
+          } else {
+            alert("Incorrect password.");
+          }
+        } else {
+          alert("User not found.");
+        }
+      });
     }
+  }
 
-    function login() {
-      const uname = document.getElementById("username").value.trim();
-      const pword = document.getElementById("password").value;
-      const users = getUsers();
+  function resetPassword() {
+    const uname = document.getElementById("resetUsername").value.trim();
+    const contact = document.getElementById("resetContact").value.trim();
+    const newPass = document.getElementById("resetPassword").value;
 
-      if (users[uname] && users[uname].password === pword) {
-        localStorage.setItem("loggedInUser", uname);
-        alert("Login successful!");
-        window.location.href = "index.html";
+    db.ref("users/" + uname).get().then(snapshot => {
+      if (snapshot.exists()) {
+        const user = snapshot.val();
+        if (user.contact === contact) {
+          user.password = newPass;
+          db.ref("users/" + uname).set(user);
+          saveLocalUser(uname, user);
+          alert("Password updated successfully!");
+          document.getElementById("resetForm").style.display = "none";
+        } else {
+          alert("Contact does not match.");
+        }
       } else {
-        alert("Invalid username or password");
+        alert("User not found.");
       }
+    });
+  }
+
+  function showReset() {
+    document.getElementById("resetForm").style.display = "block";
+  }
+
+  window.onload = () => {
+    const users = getLocalUsers();
+    if (!users.admin) {
+      const admin = { password: "admin123", contact: "admin@example.com" };
+      saveLocalUser("admin", admin);
+      db.ref("users/admin").set(admin);
     }
 
-    function resetPassword() {
-      const uname = document.getElementById("resetUsername").value.trim();
-      const contact = document.getElementById("resetContact").value.trim();
-      const newPass = document.getElementById("resetPassword").value;
-      const users = getUsers();
-
-      if (users[uname] && users[uname].contact === contact) {
-        users[uname].password = newPass;
-        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-        alert("Password updated successfully!");
-        document.getElementById("resetForm").style.display = "none";
-      } else {
-        alert("User not found or contact does not match");
-      }
-    }
-
-    function showReset() {
-      document.getElementById("resetForm").style.display = "block";
-    }
-
-    // Initialize default admin
-    window.onload = () => {
-      const users = getUsers();
-      if (!users.admin) {
-        users.admin = { password: "admin123", contact: "admin@example.com" };
-        localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-      }
-    };
-  </script>
+    // ✅ Remove settings icon injection on login page
+    // This prevents showing settings icon outside admin home
+  };
+</script>
 
 </body>
 </html>
