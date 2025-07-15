@@ -1,57 +1,151 @@
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-    authDomain: "gate-fee-system.firebaseapp.com",
-    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-    projectId: "gate-fee-system",
-    storageBucket: "gate-fee-system.appspot.com",
-    messagingSenderId: "35497617973",
-    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const currentUser = localStorage.getItem("loggedInUser") || "";
-  const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
-
-  if (currentUser !== "admin") {
-    alert("Access denied. Admin only.");
-    window.location.href = "index.html";
-  }
-
-  function saveLocalUser(username, userData) {
-    const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
-    users[username] = userData;
-    localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-  }
-
-  document.getElementById("addUserForm").addEventListener("submit", function(e) {
-    e.preventDefault();
-    const username = document.getElementById("username").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const phone = document.getElementById("phone").value.trim();
-    const email = document.getElementById("email").value.trim();
-
-    if (users[username]) {
-      document.getElementById("statusMsg").style.color = "red";
-      document.getElementById("statusMsg").textContent = "User already exists.";
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Add User - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 400px;
+      margin: 40px auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
     }
 
-    const userData = { password, phone, contact: email };
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
 
-    // Save to Firebase
-    db.ref("users/" + username).set(userData);
+    label {
+      display: block;
+      margin-top: 10px;
+    }
 
-    // Save to localStorage
-    saveLocalUser(username, userData);
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
 
-    document.getElementById("statusMsg").style.color = "green";
-    document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
-    e.target.reset();
-  });
-</script>
+    button {
+      margin-top: 20px;
+      width: 100%;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #388E3C;
+    }
+
+    #statusMsg {
+      margin-top: 15px;
+      text-align: center;
+      color: green;
+    }
+
+    .page-logo {
+      width: 100px;
+      max-height: 100px;
+      display: block;
+      margin: 0 auto 20px;
+      object-fit: contain;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="page-logo" />
+
+  <h2>Add New User</h2>
+
+  <form id="addUserForm">
+    <label>Username:
+      <input type="text" id="username" required />
+    </label>
+    <label>Password:
+      <input type="password" id="password" required />
+    </label>
+    <label>Phone Number:
+      <input type="tel" id="phone" required />
+    </label>
+    <label>Email Address:
+      <input type="email" id="email" required />
+    </label>
+    <button type="submit">Add User</button>
+    <div id="statusMsg"></div>
+  </form>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+      authDomain: "gate-fee-system.firebaseapp.com",
+      databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+      projectId: "gate-fee-system",
+      storageBucket: "gate-fee-system.appspot.com",
+      messagingSenderId: "35497617973",
+      appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const currentUser = localStorage.getItem("loggedInUser") || "";
+    if (currentUser !== "admin") {
+      alert("Access denied. Admin only.");
+      window.location.href = "index.html";
+    }
+
+    document.getElementById("addUserForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const phone = document.getElementById("phone").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      const userData = { password, phone, contact: email };
+
+      const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+      if (users[username]) {
+        document.getElementById("statusMsg").style.color = "red";
+        document.getElementById("statusMsg").textContent = "User already exists.";
+        return;
+      }
+
+      // Save to localStorage
+      users[username] = userData;
+      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+
+      // Save to Firebase
+      db.ref("users/" + username).set(userData)
+        .then(() => {
+          document.getElementById("statusMsg").style.color = "green";
+          document.getElementById("statusMsg").textContent = `User "${username}" added successfully.`;
+          e.target.reset();
+        })
+        .catch(error => {
+          document.getElementById("statusMsg").style.color = "red";
+          document.getElementById("statusMsg").textContent = "Failed to save to database.";
+          console.error(error);
+        });
+    });
+  </script>
+
+</body>
+</html>
