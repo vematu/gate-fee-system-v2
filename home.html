@@ -87,7 +87,6 @@
       background: #d32f2f;
     }
 
-    /* Settings icon */
     .settings-icon {
       display: none;
       position: fixed;
@@ -101,74 +100,6 @@
       box-shadow: 0 0 8px rgba(0,0,0,0.2);
       z-index: 999;
       cursor: pointer;
-    }
-
-    /* Slide-in settings modal */
-    .settings-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      right: 0;
-      height: 100%;
-      width: 300px;
-      background: white;
-      box-shadow: -3px 0 10px rgba(0,0,0,0.3);
-      z-index: 1000;
-      padding: 20px;
-      overflow-y: auto;
-    }
-
-    .settings-content h3 {
-      margin-top: 0;
-    }
-
-    .settings-content label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-    }
-
-    .settings-content input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    .settings-content button {
-      margin-top: 15px;
-      width: 100%;
-      padding: 10px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .settings-content button:hover {
-      background: #388e3c;
-    }
-
-    .close-settings {
-      position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 22px;
-      cursor: pointer;
-    }
-
-    .note {
-      font-size: 13px;
-      margin-top: 10px;
-      color: #777;
-    }
-
-    .role-display {
-      font-weight: bold;
-      color: #2e7d32;
-      margin-bottom: 10px;
     }
   </style>
 </head>
@@ -195,41 +126,17 @@
     <p>Welcome, <strong id="usernameDisplay"></strong></p>
   </div>
 
-  <div class="menu">
+  <div class="menu" id="menuContainer">
     <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
     <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
     <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
     <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
+    <!-- View Reports button will be injected if permitted -->
     <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
 </div>
 
-<!-- Settings Modal -->
-<div id="settingsModal" class="settings-modal">
-  <div class="settings-content">
-    <span class="close-settings" onclick="closeSettings()">&times;</span>
-    <h3>⚙️ Settings</h3>
-    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
-
-    <h4>👤 Personal Account</h4>
-    <label>Current Password:</label>
-    <input type="password" id="modalCurrentPass" placeholder="Enter current password" />
-    <label>New Password:</label>
-    <input type="password" id="modalNewPass" placeholder="Enter new password" />
-    <button onclick="changeUserPassword()">Change Password</button>
-
-    <hr />
-
-    <div id="adminSettings" style="display:none;">
-      <h4>🛠 Admin Options</h4>
-      <button onclick="syncUsersToFirebase()">Sync All Users</button>
-      <button onclick="clearAllLocalData()">Reset App Data</button>
-      <div class="note">⚠️ This will delete all local data. Use carefully.</div>
-    </div>
-  </div>
-</div>
-
-<!-- Firebase & Settings Logic -->
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -252,10 +159,7 @@
 
   if (user === "admin") {
     document.getElementById("settingsIcon").style.display = "block";
-    document.getElementById("adminSettings").style.display = "block";
   }
-
-  document.getElementById("modalUserRole").textContent = user === "admin" ? "Admin" : "User";
 
   function logout() {
     localStorage.removeItem("loggedInUser");
@@ -263,93 +167,21 @@
   }
 
   function openSettings() {
-    document.getElementById("settingsModal").style.display = "block";
+    alert("Settings panel coming soon.");
   }
 
-  function closeSettings() {
-    document.getElementById("settingsModal").style.display = "none";
-  }
+  // Inject View Reports button if user is admin or has permission
+  const userData = users[user] || {};
+  const isAdmin = user === "admin";
+  const canViewReports = userData.canViewReports === true;
 
-  function changeUserPassword() {
-    const current = document.getElementById("modalCurrentPass").value;
-    const newPass = document.getElementById("modalNewPass").value;
-
-    if (!current || !newPass) return alert("Please fill in both fields.");
-    if (users[user]?.password === current) {
-      users[user].password = newPass;
-      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
-      alert("Password changed successfully!");
-      document.getElementById("modalCurrentPass").value = "";
-      document.getElementById("modalNewPass").value = "";
-    } else {
-      alert("Current password is incorrect.");
-    }
-  }
-
-  function syncUsersToFirebase() {
-    Object.entries(users).forEach(([username, data]) => {
-      db.ref("users/" + username).set(data);
-    });
-    alert("Users synced successfully.");
-  }
-
-  function clearAllLocalData() {
-    if (confirm("Are you sure? This will clear ALL app data!")) {
-      localStorage.clear();
-      alert("Local data cleared.");
-      location.reload();
-    }
+  if (isAdmin || canViewReports) {
+    const reportsBtn = document.createElement("button");
+    reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
+    reportsBtn.onclick = () => location.href = 'reports.html';
+    document.getElementById("menuContainer").insertBefore(reportsBtn, document.querySelector(".logout"));
   }
 </script>
-<!-- Settings Modal Panel -->
-<div id="settingsModal" class="settings-modal">
-  <div class="settings-content">
-    <span class="close-settings" onclick="closeSettings()">&times;</span>
-    <h3>⚙️ Admin Settings</h3>
-
-    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
-
-    <!-- Tabs -->
-    <div class="tabs">
-      <button onclick="switchTab('account')">👤 My Account</button>
-      <button onclick="switchTab('users')">👥 Manage Users</button>
-      <button onclick="switchTab('system')">🛠 System Settings</button>
-    </div>
-
-    <!-- My Account -->
-    <div id="tab-account" class="tab-section">
-      <h4>Change My Password</h4>
-      <label>Current Password:</label>
-      <input type="password" id="currentPass" />
-      <label>New Password:</label>
-      <input type="password" id="newPass" />
-      <button onclick="changeUserPassword()">Update Password</button>
-    </div>
-
-    <!-- Manage Users (Admin Only) -->
-    <div id="tab-users" class="tab-section" style="display:none;">
-      <h4>User Accounts</h4>
-      <div id="userList"></div>
-      <h4>Add New User</h4>
-      <input type="text" id="newUsername" placeholder="Username" />
-      <input type="text" id="newContact" placeholder="Phone or Email" />
-      <input type="password" id="newPassword" placeholder="Password" />
-      <select id="newRole">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button onclick="addNewUser()">Add User</button>
-    </div>
-
-    <!-- System Settings -->
-    <div id="tab-system" class="tab-section" style="display:none;">
-      <h4>System Maintenance</h4>
-      <button onclick="syncUsersToFirebase()">🔁 Sync Users to Firebase</button>
-      <button onclick="clearAllLocalData()">🧹 Reset All Local Data</button>
-      <button onclick="clearLocalUsers()">🗑 Clear Cached Users</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
