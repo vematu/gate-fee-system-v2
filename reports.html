@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports & Summaries - Kakumiro Junior FC</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .report-container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #4CAF50;
+    }
+
+    .filter-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .filter-row input[type="date"] {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .filter-row button {
+      background: #4CAF50;
+      border: none;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .summary-section {
+      margin: 20px 0;
+      padding: 15px;
+      background: #e8f5e9;
+      border-left: 5px solid #4CAF50;
+      border-radius: 8px;
+    }
+
+    .summary-section p {
+      margin: 8px 0;
+      font-size: 15px;
+    }
+
+    .breakdown-section {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    .breakdown-section ul {
+      padding-left: 20px;
+    }
+
+    .actions {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .actions button {
+      margin: 5px;
+      padding: 10px 16px;
+      font-size: 14px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-export {
+      background: #2196F3;
+      color: white;
+    }
+
+    .btn-home {
+      background: #777;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="report-container">
+    <h2>📊 Reports & Summaries</h2>
+
+    <div class="filter-row">
+      <label>From: <input type="date" id="fromDate" /></label>
+      <label>To: <input type="date" id="toDate" /></label>
+      <button onclick="filterData()"><i class="fas fa-search"></i> Filter</button>
+    </div>
+
+    <div class="summary-section" id="summaryStats">
+      <p>➤ Total Collected: UGX 0</p>
+      <p>➤ Cash: UGX 0</p>
+      <p>➤ Mobile Money: UGX 0</p>
+      <p>➤ Total Transactions: 0</p>
+    </div>
+
+    <div class="breakdown-section">
+      <strong>Breakdown by Day:</strong>
+      <ul id="dailyBreakdown"></ul>
+    </div>
+
+    <div class="actions">
+      <button class="btn-export" onclick="exportSummary()">Export Summary</button>
+      <button class="btn-home" onclick="location.href='home.html'">Back Home</button>
+    </div>
+  </div>
+
+  <script>
+    let gateFeeData = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
+
+    function formatUGX(amount) {
+      return "UGX " + amount.toLocaleString();
+    }
+
+    function filterData() {
+      const from = new Date(document.getElementById("fromDate").value);
+      const to = new Date(document.getElementById("toDate").value);
+      if (isNaN(from) || isNaN(to)) return;
+
+      let filtered = gateFeeData.filter(record => {
+        let date = new Date(record.date);
+        return date >= from && date <= to;
+      });
+
+      let total = 0, cash = 0, momo = 0, daily = {};
+      filtered.forEach(record => {
+        const amt = parseInt(record.amount) || 0;
+        total += amt;
+        if (record.paymentMethod.toLowerCase() === "cash") cash += amt;
+        else momo += amt;
+
+        daily[record.date] = (daily[record.date] || 0) + amt;
+      });
+
+      document.getElementById("summaryStats").innerHTML = `
+        <p>➤ Total Collected: ${formatUGX(total)}</p>
+        <p>➤ Cash: ${formatUGX(cash)}</p>
+        <p>➤ Mobile Money: ${formatUGX(momo)}</p>
+        <p>➤ Total Transactions: ${filtered.length}</p>
+      `;
+
+      let breakdownList = Object.entries(daily).map(([date, amt]) =>
+        `<li>${date}: ${formatUGX(amt)}</li>`).join("");
+      document.getElementById("dailyBreakdown").innerHTML = breakdownList;
+    }
+
+    function exportSummary() {
+      const from = document.getElementById("fromDate").value;
+      const to = document.getElementById("toDate").value;
+      let csv = "Date,Amount,Payment Method,Name,Contact\n";
+      let filtered = gateFeeData.filter(entry => {
+        let d = new Date(entry.date);
+        return (!from || new Date(from) <= d) && (!to || new Date(to) >= d);
+      });
+
+      filtered.forEach(entry => {
+        csv += `${entry.date},${entry.amount},${entry.paymentMethod},${entry.name || ""},${entry.contact || ""}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `GateFeeSummary-${from || "all"}-to-${to || "all"}.csv`;
+      link.click();
+    }
+  </script>
+
+</body>
+</html>
