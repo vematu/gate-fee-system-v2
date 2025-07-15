@@ -7,51 +7,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f0f2f5;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .logo-top {
-      display: block;
-      margin: 0 auto 20px;
-      width: 120px;
-      max-height: 120px;
-      object-fit: contain;
-      box-shadow: 0 0 8px rgba(0,0,0,0.2);
-      border-radius: 10px;
-    }
-    form {
-      max-width: 500px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-    }
-    input, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .logo-top { display: block; margin: 0 auto 20px; width: 120px; max-height: 120px; object-fit: contain; box-shadow: 0 0 8px rgba(0,0,0,0.2); border-radius: 10px; }
+    form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; }
+    button { width: 100%; padding: 12px; margin-top: 15px; background: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
+    
     .receipt {
       max-width: 500px;
       margin: 20px auto;
@@ -62,17 +25,15 @@
       position: relative;
       text-align: center;
     }
-    .receipt-logo img {
-      max-width: 80px;
-      margin-bottom: 10px;
-    }
+    .receipt-logo img { max-width: 80px; margin-bottom: 10px; }
     .team-motto {
-      font-family: 'Edwardian Script ITC', cursive;
+      font-family: "Edwardian Script ITC", "Segoe Script", cursive;
       font-weight: bold;
-      font-size: 22px;
-      margin-top: 25px;
+      font-size: 20px;
+      margin-top: 20px;
       text-align: center;
     }
+
     @media print {
       body * { visibility: hidden; }
       .receipt, .receipt * { visibility: visible; }
@@ -81,6 +42,7 @@
         top: 0;
         left: 0;
         width: 100%;
+        padding: 30px;
       }
     }
   </style>
@@ -130,8 +92,6 @@
     let counter = 1;
     let savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
     if (savedFees.length > 0) counter = savedFees.length + 1;
-
-    let savedPort = null; // for reusing printer
 
     document.getElementById("gateForm").addEventListener("submit", async function(e) {
       e.preventDefault();
@@ -207,30 +167,28 @@ Date      : ${entry.date}
 Served By : ${entry.servedBy}
 
 ============================
-  One Team, One Dream
+   One Team, One Dream
 ============================
 
 
-\n\n\n`; // Paper feed
+\n\n\n`;
 
       const encoder = new TextEncoder();
       const data = encoder.encode(text);
 
       try {
-        if (!savedPort) {
-          savedPort = await navigator.serial.requestPort();
-          await savedPort.open({ baudRate: 9600 });
-        }
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
 
-        const writer = savedPort.writable.getWriter();
+        const writer = port.writable.getWriter();
         await writer.write(data);
         writer.releaseLock();
+        await port.close();
 
         console.log("Printed successfully.");
       } catch (err) {
-        console.error("Printing failed:", err.message);
+        console.error("Bluetooth Print Failed:", err.message);
         alert("Bluetooth Print Failed: " + err.message);
-        savedPort = null;
       }
     }
   </script>
