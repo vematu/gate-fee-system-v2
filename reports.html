@@ -160,8 +160,33 @@
         }]
       },
       options: {
-        scales: { x: { type: 'time', time: { unit: 'day' }}, y: { beginAtZero: true }},
-        plugins: { tooltip: { callbacks: { label: ctx => formatUGX(ctx.parsed.y) }}}
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'day',
+              displayFormats: { day: 'MMM d' }
+            },
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Amount (UGX)'
+            }
+          }
+        },
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: ctx => formatUGX(ctx.parsed.y)
+            }
+          }
+        }
       }
     });
 
@@ -211,7 +236,6 @@
       });
     });
   };
-
 </script>
 </body>
 </html>
