@@ -182,6 +182,54 @@
     document.getElementById("menuContainer").insertBefore(reportsBtn, document.querySelector(".logout"));
   }
 </script>
+  
+<!-- FIXED SCRIPT -->
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+  const user = localStorage.getItem("loggedInUser");
+
+  document.getElementById("usernameDisplay").textContent = user;
+
+  if (user === "admin") {
+    document.getElementById("settingsIcon").style.display = "block";
+  }
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+  }
+
+  function openSettings() {
+    document.getElementById("settingsModal").style.display = "block";
+  }
+
+  function closeSettings() {
+    document.getElementById("settingsModal").style.display = "none";
+  }
+
+  const userData = users[user] || {};
+  const isAdmin = user === "admin";
+  const canViewReports = userData.canViewReports === true;
+
+  if (isAdmin || canViewReports) {
+    const reportsBtn = document.createElement("button");
+    reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
+    reportsBtn.onclick = () => location.href = 'reports.html';
+    document.getElementById("menuContainer").insertBefore(reportsBtn, document.querySelector(".logout"));
+  }
+</script>
 
 </body>
 </html>
