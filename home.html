@@ -167,8 +167,8 @@
   }
 
   function openSettings() {
-    alert("Settings panel coming soon.");
-  }
+  document.getElementById("settingsModal").style.display = "block";
+}
 
   // Inject View Reports button if user is admin or has permission
   const userData = users[user] || {};
