@@ -11,16 +11,38 @@
     .logo-header img { width: 100px; border-radius: 10px; box-shadow: 0 0 8px rgba(0,0,0,0.1); }
     h2 { text-align: center; margin: 10px 0 20px; }
     .tabs { display: flex; justify-content: center; margin-bottom: 20px; }
-    .tab-btn { padding: 10px 20px; margin: 0 5px; border: none; cursor: pointer; background-color: #ccc; color: black; }
+    .tab-btn {
+      padding: 10px 20px; margin: 0 5px; border: none; cursor: pointer;
+      background-color: #ccc; color: black;
+    }
     .tab-btn.active { background-color: #2196F3; color: white; }
-    .container { max-width: 100%; background: white; padding: 20px; border-radius: 8px; }
-    input[type="text"] { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; font-size: 14px; text-align: left; }
+    .container {
+      max-width: 100%; background: white;
+      padding: 20px; border-radius: 8px;
+    }
+    input[type="text"] {
+      width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px;
+    }
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 10px;
+    }
+    th, td {
+      border: 1px solid #ddd; padding: 8px; font-size: 14px; text-align: left;
+    }
     th { background-color: #f0f0f0; }
-    button { padding: 10px; margin-top: 10px; background: #2196F3; color: white; border: none; cursor: pointer; }
-    .delete-btn { background: #f44336; color: white; border: none; padding: 5px 10px; cursor: pointer; }
+    button {
+      padding: 10px; margin-top: 10px;
+      background: #2196F3; color: white; border: none; cursor: pointer;
+    }
+    .delete-btn {
+      background: #f44336; color: white;
+      border: none; padding: 5px 10px; cursor: pointer;
+    }
   </style>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -46,10 +68,6 @@
   <button onclick="exportCSV()">Download CSV</button>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
@@ -66,6 +84,7 @@
   let currentTab = 'gate';
   let allGateData = [];
   let allSupporterData = [];
+  const currentUser = localStorage.getItem("loggedInUser");
 
   function switchTab(tab) {
     currentTab = tab;
@@ -79,14 +98,16 @@
     db.ref("gateFeeRecords").once("value", snap => {
       const firebaseData = snap.val() || {};
       const localData = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
-      allGateData = [...Object.values(firebaseData), ...localData];
+      const merged = [...Object.values(firebaseData), ...localData];
+      allGateData = merged;
       if (currentTab === 'gate') renderTable();
     });
 
     db.ref("supporterRecords").once("value", snap => {
       const firebaseData = snap.val() || {};
       const localData = JSON.parse(localStorage.getItem("supportersData") || "[]");
-      allSupporterData = [...Object.values(firebaseData), ...localData];
+      const merged = [...Object.values(firebaseData), ...localData];
+      allSupporterData = merged;
       if (currentTab === 'supporter') renderTable();
     });
   }
@@ -102,9 +123,9 @@
       thead.innerHTML = `
         <tr>
           <th>Receipt No</th><th>Name</th><th>Phone</th>
-          <th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th><th>Actions</th>
+          <th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th>
         </tr>`;
-      data.forEach((rec, index) => {
+      data.forEach(rec => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${rec.receiptNo || ""}</td>
@@ -115,17 +136,14 @@
           <td>${rec.paymentMethod || rec.method || ""}</td>
           <td>${rec.date || ""}</td>
           <td>${rec.servedBy || ""}</td>
-          <td>
-            <button class="delete-btn" onclick="deleteRecord('gate', ${index})">Delete</button>
-            <button onclick="printReceipt(${index})">🖨️ Print</button>
-          </td>`;
+        `;
         tbody.appendChild(row);
       });
     } else {
       thead.innerHTML = `
         <tr><th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th>
-        <th>Location</th><th>Membership</th><th>Created By</th><th>Actions</th></tr>`;
-      data.forEach((rec, index) => {
+        <th>Location</th><th>Membership</th><th>Created By</th></tr>`;
+      data.forEach(rec => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${rec.id || ""}</td>
@@ -136,54 +154,44 @@
           <td>${rec.location || ""}</td>
           <td>${rec.membership || ""}</td>
           <td>${rec.createdBy || ""}</td>
-          <td><button class="delete-btn" onclick="deleteRecord('supporter', ${index})">Delete</button></td>`;
+        `;
         tbody.appendChild(row);
       });
     }
   }
 
-  function deleteRecord(type, index) {
-    if (!confirm("Are you sure you want to delete this record?")) return;
-    let key = type === 'gate' ? 'gateFeeData' : 'supportersData';
-    let list = JSON.parse(localStorage.getItem(key) || "[]");
-    list.splice(index, 1);
-    localStorage.setItem(key, JSON.stringify(list));
-    alert("Deleted!");
-    fetchData();
-  }
-
-  function printReceipt(index) {
-    const rec = allGateData[index];
-    const win = window.open('', '', 'width=300,height=600');
-    win.document.write(`
-      <html><head><title>Print Receipt</title>
-      <style>
-        body { font-family: monospace; padding: 20px; text-align: center; }
-        h2 { margin: 0; }
-      </style></head><body>
-      <h2>Kakumiro Junior FC</h2>
-      <p>Gate Collection Receipt</p>
-      <hr/>
-      <p><strong>Receipt No:</strong> ${rec.receiptNo}</p>
-      <p><strong>Name:</strong> ${rec.name}</p>
-      <p><strong>Phone:</strong> ${rec.contact || rec.phone}</p>
-      <p><strong>Event:</strong> ${rec.event}</p>
-      <p><strong>Amount:</strong> UGX ${rec.amount}</p>
-      <p><strong>Method:</strong> ${rec.paymentMethod || rec.method}</p>
-      <p><strong>Date:</strong> ${rec.date}</p>
-      <p><strong>Served By:</strong> ${rec.servedBy}</p>
-      <hr/>
-      <p><em>One Team, One Dream</em></p>
-      <script>window.print();setTimeout(()=>window.close(),1000);</script>
-      </body></html>`);
-  }
-
   function filterTable() {
     const term = document.getElementById("searchInput").value.toLowerCase();
+    const tbody = document.querySelector("#recordTable tbody");
     const data = currentTab === 'gate' ? allGateData : allSupporterData;
+    tbody.innerHTML = "";
+
     const filtered = data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(term)));
-    (currentTab === 'gate' ? allGateData : allSupporterData) = filtered;
-    renderTable();
+    filtered.forEach(rec => {
+      const row = document.createElement("tr");
+      if (currentTab === 'gate') {
+        row.innerHTML = `
+          <td>${rec.receiptNo || ""}</td>
+          <td>${rec.name || ""}</td>
+          <td>${rec.contact || rec.phone || ""}</td>
+          <td>${rec.event || ""}</td>
+          <td>UGX ${rec.amount || 0}</td>
+          <td>${rec.paymentMethod || rec.method || ""}</td>
+          <td>${rec.date || ""}</td>
+          <td>${rec.servedBy || ""}</td>`;
+      } else {
+        row.innerHTML = `
+          <td>${rec.id || ""}</td>
+          <td>${rec.name || ""}</td>
+          <td>${rec.phone || ""}</td>
+          <td>${rec.gender || ""}</td>
+          <td>${rec.age || ""}</td>
+          <td>${rec.location || ""}</td>
+          <td>${rec.membership || ""}</td>
+          <td>${rec.createdBy || ""}</td>`;
+      }
+      tbody.appendChild(row);
+    });
   }
 
   function exportCSV() {
@@ -202,14 +210,13 @@
     }
 
     const blob = new Blob([csv], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = currentTab === 'gate' ? "gate_fee_records.csv" : "supporter_records.csv";
-    a.click();
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = currentTab === 'gate' ? "gate_fee_records.csv" : "supporter_records.csv";
+    link.click();
   }
 
   window.onload = fetchData;
 </script>
-
 </body>
 </html>
