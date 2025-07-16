@@ -87,6 +87,7 @@
       background: #d32f2f;
     }
 
+    /* Settings icon */
     .settings-icon {
       display: none;
       position: fixed;
@@ -102,6 +103,7 @@
       cursor: pointer;
     }
 
+    /* Slide-in settings modal */
     .settings-modal {
       display: none;
       position: fixed;
@@ -177,11 +179,13 @@
   if (!loggedInUser) window.location.href = "login.html";
 </script>
 
+<!-- Floating settings icon -->
 <div class="settings-icon" id="settingsIcon" onclick="openSettings()">
   <i class="fas fa-cog"></i>
 </div>
 
 <div class="container">
+  <!-- Logo and Title -->
   <div class="header-logo">
     <img src="logo.jpg" alt="Club Logo" />
     <h2>Kakumiro Junior FC</h2>
@@ -191,16 +195,16 @@
     <p>Welcome, <strong id="usernameDisplay"></strong></p>
   </div>
 
-  <div class="menu" id="menuContainer">
+  <div class="menu">
     <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
     <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
     <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
     <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
-    <!-- Reports button will be inserted dynamically -->
     <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
 </div>
 
+<!-- Settings Modal -->
 <div id="settingsModal" class="settings-modal">
   <div class="settings-content">
     <span class="close-settings" onclick="closeSettings()">&times;</span>
@@ -225,6 +229,7 @@
   </div>
 </div>
 
+<!-- Firebase & Settings Logic -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -295,19 +300,56 @@
       location.reload();
     }
   }
-
-  // Insert Reports button if admin or permitted
-  const userData = users[user] || {};
-  const canViewReports = userData.canViewReports === true;
-  if (user === "admin" || canViewReports) {
-    const reportsBtn = document.createElement("button");
-    reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
-    reportsBtn.onclick = () => location.href = 'reports.html';
-    const container = document.getElementById("menuContainer");
-    const logoutBtn = container.querySelector(".logout");
-    container.insertBefore(reportsBtn, logoutBtn);
-  }
 </script>
+<!-- Settings Modal Panel -->
+<div id="settingsModal" class="settings-modal">
+  <div class="settings-content">
+    <span class="close-settings" onclick="closeSettings()">&times;</span>
+    <h3>⚙️ Admin Settings</h3>
+
+    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button onclick="switchTab('account')">👤 My Account</button>
+      <button onclick="switchTab('users')">👥 Manage Users</button>
+      <button onclick="switchTab('system')">🛠 System Settings</button>
+    </div>
+
+    <!-- My Account -->
+    <div id="tab-account" class="tab-section">
+      <h4>Change My Password</h4>
+      <label>Current Password:</label>
+      <input type="password" id="currentPass" />
+      <label>New Password:</label>
+      <input type="password" id="newPass" />
+      <button onclick="changeUserPassword()">Update Password</button>
+    </div>
+
+    <!-- Manage Users (Admin Only) -->
+    <div id="tab-users" class="tab-section" style="display:none;">
+      <h4>User Accounts</h4>
+      <div id="userList"></div>
+      <h4>Add New User</h4>
+      <input type="text" id="newUsername" placeholder="Username" />
+      <input type="text" id="newContact" placeholder="Phone or Email" />
+      <input type="password" id="newPassword" placeholder="Password" />
+      <select id="newRole">
+        <option value="user">User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <button onclick="addNewUser()">Add User</button>
+    </div>
+
+    <!-- System Settings -->
+    <div id="tab-system" class="tab-section" style="display:none;">
+      <h4>System Maintenance</h4>
+      <button onclick="syncUsersToFirebase()">🔁 Sync Users to Firebase</button>
+      <button onclick="clearAllLocalData()">🧹 Reset All Local Data</button>
+      <button onclick="clearLocalUsers()">🗑 Clear Cached Users</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
