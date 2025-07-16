@@ -101,6 +101,73 @@
       z-index: 999;
       cursor: pointer;
     }
+
+    .settings-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 300px;
+      background: white;
+      box-shadow: -3px 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .settings-content h3 {
+      margin-top: 0;
+    }
+
+    .settings-content label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .settings-content input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .settings-content button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .settings-content button:hover {
+      background: #388e3c;
+    }
+
+    .close-settings {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 13px;
+      margin-top: 10px;
+      color: #777;
+    }
+
+    .role-display {
+      font-weight: bold;
+      color: #2e7d32;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -110,13 +177,11 @@
   if (!loggedInUser) window.location.href = "login.html";
 </script>
 
-<!-- Floating settings icon -->
 <div class="settings-icon" id="settingsIcon" onclick="openSettings()">
   <i class="fas fa-cog"></i>
 </div>
 
 <div class="container">
-  <!-- Logo and Title -->
   <div class="header-logo">
     <img src="logo.jpg" alt="Club Logo" />
     <h2>Kakumiro Junior FC</h2>
@@ -131,12 +196,35 @@
     <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
     <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
     <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
-    <!-- View Reports button will be injected if permitted -->
+    <!-- Reports button will be inserted dynamically -->
     <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
   </div>
 </div>
 
-<!-- Firebase -->
+<div id="settingsModal" class="settings-modal">
+  <div class="settings-content">
+    <span class="close-settings" onclick="closeSettings()">&times;</span>
+    <h3>⚙️ Settings</h3>
+    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
+
+    <h4>👤 Personal Account</h4>
+    <label>Current Password:</label>
+    <input type="password" id="modalCurrentPass" placeholder="Enter current password" />
+    <label>New Password:</label>
+    <input type="password" id="modalNewPass" placeholder="Enter new password" />
+    <button onclick="changeUserPassword()">Change Password</button>
+
+    <hr />
+
+    <div id="adminSettings" style="display:none;">
+      <h4>🛠 Admin Options</h4>
+      <button onclick="syncUsersToFirebase()">Sync All Users</button>
+      <button onclick="clearAllLocalData()">Reset App Data</button>
+      <div class="note">⚠️ This will delete all local data. Use carefully.</div>
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 <script>
@@ -159,52 +247,10 @@
 
   if (user === "admin") {
     document.getElementById("settingsIcon").style.display = "block";
+    document.getElementById("adminSettings").style.display = "block";
   }
 
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
-
-  function openSettings() {
-  document.getElementById("settingsModal").style.display = "block";
-}
-
-  // Inject View Reports button if user is admin or has permission
-  const userData = users[user] || {};
-  const isAdmin = user === "admin";
-  const canViewReports = userData.canViewReports === true;
-
-  if (isAdmin || canViewReports) {
-    const reportsBtn = document.createElement("button");
-    reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
-    reportsBtn.onclick = () => location.href = 'reports.html';
-    document.getElementById("menuContainer").insertBefore(reportsBtn, document.querySelector(".logout"));
-  }
-</script>
-  
-<!-- FIXED SCRIPT -->
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-    authDomain: "gate-fee-system.firebaseapp.com",
-    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-    projectId: "gate-fee-system",
-    storageBucket: "gate-fee-system.appspot.com",
-    messagingSenderId: "35497617973",
-    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
-  const user = localStorage.getItem("loggedInUser");
-
-  document.getElementById("usernameDisplay").textContent = user;
-
-  if (user === "admin") {
-    document.getElementById("settingsIcon").style.display = "block";
-  }
+  document.getElementById("modalUserRole").textContent = user === "admin" ? "Admin" : "User";
 
   function logout() {
     localStorage.removeItem("loggedInUser");
@@ -219,15 +265,47 @@
     document.getElementById("settingsModal").style.display = "none";
   }
 
-  const userData = users[user] || {};
-  const isAdmin = user === "admin";
-  const canViewReports = userData.canViewReports === true;
+  function changeUserPassword() {
+    const current = document.getElementById("modalCurrentPass").value;
+    const newPass = document.getElementById("modalNewPass").value;
 
-  if (isAdmin || canViewReports) {
+    if (!current || !newPass) return alert("Please fill in both fields.");
+    if (users[user]?.password === current) {
+      users[user].password = newPass;
+      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      alert("Password changed successfully!");
+      document.getElementById("modalCurrentPass").value = "";
+      document.getElementById("modalNewPass").value = "";
+    } else {
+      alert("Current password is incorrect.");
+    }
+  }
+
+  function syncUsersToFirebase() {
+    Object.entries(users).forEach(([username, data]) => {
+      db.ref("users/" + username).set(data);
+    });
+    alert("Users synced successfully.");
+  }
+
+  function clearAllLocalData() {
+    if (confirm("Are you sure? This will clear ALL app data!")) {
+      localStorage.clear();
+      alert("Local data cleared.");
+      location.reload();
+    }
+  }
+
+  // Insert Reports button if admin or permitted
+  const userData = users[user] || {};
+  const canViewReports = userData.canViewReports === true;
+  if (user === "admin" || canViewReports) {
     const reportsBtn = document.createElement("button");
     reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
     reportsBtn.onclick = () => location.href = 'reports.html';
-    document.getElementById("menuContainer").insertBefore(reportsBtn, document.querySelector(".logout"));
+    const container = document.getElementById("menuContainer");
+    const logoutBtn = container.querySelector(".logout");
+    container.insertBefore(reportsBtn, logoutBtn);
   }
 </script>
 
