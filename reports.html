@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reports & Visuals - Kakumiro Junior FC</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/luxon/3.0.1/luxon.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-adapter-luxon/1.1.0/chartjs-adapter-luxon.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+    .report-container { max-width: 800px; margin: auto; padding: 25px; background: white; border-radius: 12px; box-shadow: 0 0 12px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #4CAF50; margin-bottom: 20px; }
+    .filter-row, .quick-range { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+    input, select, button { padding: 8px 10px; font-size: 14px; border-radius: 5px; border: 1px solid #ccc; }
+    .quick-range button { background: #eee; border: 1px solid #bbb; cursor: pointer; }
+    .quick-range button.active { background: #4CAF50; color: white; }
+    .summary { background: #e8f5e9; padding: 15px; border-left: 5px solid #4CAF50; border-radius: 8px; margin-bottom: 20px; }
+    .flex-row { display: flex; gap: 20px; }
+    .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
+    .actions { text-align: center; }
+    .actions button { margin: 5px; padding: 10px 16px; border: none; border-radius: 5px; cursor: pointer; }
+    .btn-export { background: #2196F3; color: white; }
+    .btn-back { background: #555; color: white; }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <h2>📊 Reports & Analytics</h2>
+
+    <div class="quick-range">
+      <button data-range="today">Today</button>
+      <button data-range="yesterday">Yesterday</button>
+      <button data-range="week">This Week</button>
+      <button data-range="lastWeek">Last Week</button>
+      <button data-range="month">This Month</button>
+      <button data-range="lastMonth">Last Month</button>
+      <button data-range="90days">Last 90 Days</button>
+      <button data-range="year">This Year</button>
+    </div>
+
+    <div class="filter-row">
+      <label>From: <input type="date" id="fromDate"></label>
+      <label>To: <input type="date" id="toDate"></label>
+      <button onclick="generateReport()">🔍 Filter</button>
+      <select id="chartType" onchange="updateChart()">
+        <option value="bar">Bar Chart</option>
+        <option value="line">Line Chart</option>
+      </select>
+    </div>
+
+    <div class="summary" id="summarySection"></div>
+
+    <div class="chart-container">
+      <canvas id="timeChart"></canvas>
+    </div>
+
+    <div class="flex-row">
+      <div>
+        <strong>👥 Frequent Supporters</strong>
+        <ul id="frequentPayers"></ul>
+      </div>
+      <div>
+        <strong>🏅 Registered Supporters</strong>
+        <p id="supportersCount">0</p>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-export" onclick="exportCSV()">Export Summary</button>
+      <button class="btn-back" onclick="location.href='home.html'">Back Home</button>
+    </div>
+  </div>
+
+<script>
+  // Firebase init
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  let gateData = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
+  let supporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
+
+  // Fetch firebase data
+  db.ref("gateFeeRecords").once("value").then(snap => {
+    const vals = snap.val(); if(vals) gateData = Object.values(vals);
+    db.ref("supporterRecords").once("value").then(s2 => {
+      const sup = s2.val(); if(sup) supporters = Object.values(sup);
+      document.getElementById('supportersCount').innerText = supporters.length;
+      generateReport();
+    });
+  });
+
+  // Chart
+  let chart;
+  function buildChart(labels, data){
+    const ctx = document.getElementById("timeChart").getContext("2d");
+    const type = document.getElementById("chartType").value;
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type,
+      data:{ labels, datasets:[{ label:'Collected UGX', data, backgroundColor:'#4CAF50', borderColor:'#2e7d32', fill:false }]},
+      options:{
+        scales:{ x:{ type:'time', time:{ unit:'day' }}, y:{ beginAtZero:true }},
+        plugins:{ tooltip:{ callbacks:{ label: ctx => formatUGX(ctx.parsed.y) }}}
+      }
+    });
+  }
+
+  function formatUGX(val){ return "UGX " + Number(val).toLocaleString(); }
+
+  function computeRange(range){
+    const now = luxon.DateTime.local();
+    switch(range){
+      case 'today': return [now.startOf('day'), now.endOf('day')];
+      case 'yesterday': return [now.minus({days:1}).startOf('day'), now.minus({days:1}).endOf('day')];
+      case 'week': return [now.startOf('week'), now.endOf('week')];
+      case 'lastWeek': return [now.minus({weeks:1}).startOf('week'), now.minus({weeks:1}).endOf('week')];
+      case 'month': return [now.startOf('month'), now.endOf('month')];
+      case 'lastMonth': return [now.minus({months:1}).startOf('month'), now.minus({months:1}).endOf('month')];
+      case '90days': return [now.minus({days:90}), now];
+      case 'year': return [now.startOf('year'), now.endOf('year')];
+      default: return [null,null];
+    }
+  }
+
+  document.querySelectorAll('.quick-range button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.quick-range button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      const [s,e] = computeRange(btn.dataset.range);
+      document.getElementById("fromDate").value = s ? s.toISODate() : "";
+      document.getElementById("toDate").value = e ? e.toISODate() : "";
+      generateReport();
+    });
+  });
+
+  function generateReport(){
+    const from = document.getElementById("fromDate").valueAsDate;
+    const to = document.getElementById("toDate").valueAsDate;
+    let filtered = gateData.filter(en => {
+      const d = new Date(en.date);
+      return (!from || d>=from) && (!to || d<=to);
+    });
+
+    let total=0, cash=0, momo=0, dailyMap={}, payCount={};
+    filtered.forEach(en=>{
+      const amt = +en.amount;
+      total+=amt;
+      if(en.paymentMethod.toLowerCase()==='cash') cash+=amt; else momo+=amt;
+      dailyMap[en.date] = (dailyMap[en.date]||0)+amt;
+      const key=en.name+'|'+en.contact; payCount[key]=(payCount[key]||0)+1;
+    });
+
+    const labels = Object.keys(dailyMap).sort();
+    const data = labels.map(d=>dailyMap[d]);
+
+    buildChart(labels, data);
+
+    document.getElementById("summarySection").innerHTML = `
+      <p>➤ Total Collected: ${formatUGX(total)}</p>
+      <p>➤ Cash: ${formatUGX(cash)}</p>
+      <p>➤ Mobile Money: ${formatUGX(momo)}</p>
+      <p>➤ Total Transactions: ${filtered.length}</p>
+    `;
+
+    document.getElementById("frequentPayers").innerHTML = Object.entries(payCount)
+      .sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>{
+        const [n,c]=k.split('|');
+        return `<li>${n} (${c}) — ${v} times</li>`;
+      }).join('') || '<li>No active payers in range</li>';
+
+    document.getElementById('supportersCount').innerText = supporters.length;
+  }
+
+  function updateChart(){
+    generateReport();
+  }
+
+  function exportCSV(){
+    let csv="Date,Amount,Method,Name,Contact\n";
+    gateData.forEach(en=>{
+      csv+=`${en.date},${en.amount},${en.paymentMethod},${en.name||''},${en.contact||''}\n`;
+    });
+    const blob=new Blob([csv],{type:'text/csv'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download="GateFeeAnalytics.csv";
+    a.click();
+  }
+  
+</script>
+</body>
+</html>
