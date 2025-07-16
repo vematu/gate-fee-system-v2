@@ -92,6 +92,26 @@
 
   let gateData = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
   let supporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
+  
+// Combine Firebase and LocalStorage data
+let localGate = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
+let localSupporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+db.ref("gateFeeRecords").once("value").then(snapshot => {
+  const remote = snapshot.val() || {};
+  const firebaseGateData = Object.values(remote);
+  gateData = [...firebaseGateData, ...localGate]; // Combine both
+  return db.ref("supporterRecords").once("value");
+}).then(snap2 => {
+  const remote2 = snap2.val() || {};
+  const firebaseSupporters = Object.values(remote2);
+  supporters = [...firebaseSupporters, ...localSupporters]; // Combine both
+  document.getElementById('supportersCount').innerText = supporters.length;
+  generateReport();
+});
 
   // Fetch firebase data
   db.ref("gateFeeRecords").once("value").then(snap => {
