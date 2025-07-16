@@ -20,7 +20,7 @@
     .quick-range button { background: #eee; border: 1px solid #bbb; cursor: pointer; }
     .quick-range button.active { background: #4CAF50; color: white; }
     .summary { background: #e8f5e9; padding: 15px; border-left: 5px solid #4CAF50; border-radius: 8px; margin-bottom: 20px; }
-    .flex-row { display: flex; gap: 20px; }
+    .flex-row { display: flex; gap: 20px; justify-content: space-between; }
     .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
     .actions { text-align: center; }
     .actions button { margin: 5px; padding: 10px 16px; border: none; border-radius: 5px; cursor: pointer; }
@@ -47,7 +47,7 @@
       <label>From: <input type="date" id="fromDate"></label>
       <label>To: <input type="date" id="toDate"></label>
       <button onclick="generateReport()">🔍 Filter</button>
-      <select id="chartType" onchange="updateChart()">
+      <select id="chartType" onchange="generateReport()">
         <option value="bar">Bar Chart</option>
         <option value="line">Line Chart</option>
       </select>
@@ -72,12 +72,11 @@
 
     <div class="actions">
       <button class="btn-export" onclick="exportCSV()">Export Summary</button>
-      <button class="btn-back" onclick="location.href='home.html'">Back Home</button>
+      <button class="btn-back" onclick="location.href='index.html'">Back Home</button>
     </div>
   </div>
 
 <script>
-  // Firebase init
   const firebaseConfig = {
     apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
     authDomain: "gate-fee-system.firebaseapp.com",
@@ -90,34 +89,9 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  let gateData = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
-  let supporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
-
-  // Fetch firebase data
-  db.ref("gateFeeRecords").once("value").then(snap => {
-    const vals = snap.val(); if(vals) gateData = Object.values(vals);
-    db.ref("supporterRecords").once("value").then(s2 => {
-      const sup = s2.val(); if(sup) supporters = Object.values(sup);
-      document.getElementById('supportersCount').innerText = supporters.length;
-      generateReport();
-    });
-  });
-
-  // Chart
+  let gateData = [];
+  let supporters = [];
   let chart;
-  function buildChart(labels, data){
-    const ctx = document.getElementById("timeChart").getContext("2d");
-    const type = document.getElementById("chartType").value;
-    if(chart) chart.destroy();
-    chart = new Chart(ctx, {
-      type,
-      data:{ labels, datasets:[{ label:'Collected UGX', data, backgroundColor:'#4CAF50', borderColor:'#2e7d32', fill:false }]},
-      options:{
-        scales:{ x:{ type:'time', time:{ unit:'day' }}, y:{ beginAtZero:true }},
-        plugins:{ tooltip:{ callbacks:{ label: ctx => formatUGX(ctx.parsed.y) }}}
-      }
-    });
-  }
 
   function formatUGX(val){ return "UGX " + Number(val).toLocaleString(); }
 
@@ -141,33 +115,55 @@
       document.querySelectorAll('.quick-range button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       const [s,e] = computeRange(btn.dataset.range);
-      document.getElementById("fromDate").value = s ? s.toISODate() : "";
-      document.getElementById("toDate").value = e ? e.toISODate() : "";
+      document.getElementById("fromDate").value = s.toISODate();
+      document.getElementById("toDate").value = e.toISODate();
       generateReport();
     });
   });
 
   function generateReport(){
-    const from = document.getElementById("fromDate").valueAsDate;
-    const to = document.getElementById("toDate").valueAsDate;
+    const from = new Date(document.getElementById("fromDate").value);
+    const to = new Date(document.getElementById("toDate").value);
     let filtered = gateData.filter(en => {
       const d = new Date(en.date);
-      return (!from || d>=from) && (!to || d<=to);
+      return (!isNaN(from) ? d >= from : true) && (!isNaN(to) ? d <= to : true);
     });
 
     let total=0, cash=0, momo=0, dailyMap={}, payCount={};
     filtered.forEach(en=>{
       const amt = +en.amount;
       total+=amt;
-      if(en.paymentMethod.toLowerCase()==='cash') cash+=amt; else momo+=amt;
-      dailyMap[en.date] = (dailyMap[en.date]||0)+amt;
-      const key=en.name+'|'+en.contact; payCount[key]=(payCount[key]||0)+1;
+      const method = en.paymentMethod?.toLowerCase() || en.method?.toLowerCase() || "";
+      if(method.includes("cash")) cash+=amt; else momo+=amt;
+
+      const dateKey = en.date;
+      dailyMap[dateKey] = (dailyMap[dateKey]||0)+amt;
+
+      const key = (en.name || "Unknown") + "|" + (en.contact || en.phone || ""); 
+      payCount[key] = (payCount[key]||0)+1;
     });
 
     const labels = Object.keys(dailyMap).sort();
-    const data = labels.map(d=>dailyMap[d]);
-
-    buildChart(labels, data);
+    const data = labels.map(d => dailyMap[d]);
+    const ctx = document.getElementById("timeChart").getContext("2d");
+    if(chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: document.getElementById("chartType").value,
+      data: {
+        labels,
+        datasets: [{
+          label: 'Collected UGX',
+          data,
+          backgroundColor: '#4CAF50',
+          borderColor: '#2e7d32',
+          fill: false
+        }]
+      },
+      options: {
+        scales: { x: { type: 'time', time: { unit: 'day' }}, y: { beginAtZero: true }},
+        plugins: { tooltip: { callbacks: { label: ctx => formatUGX(ctx.parsed.y) }}}
+      }
+    });
 
     document.getElementById("summarySection").innerHTML = `
       <p>➤ Total Collected: ${formatUGX(total)}</p>
@@ -177,31 +173,44 @@
     `;
 
     document.getElementById("frequentPayers").innerHTML = Object.entries(payCount)
-      .sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>{
-        const [n,c]=k.split('|');
-        return `<li>${n} (${c}) — ${v} times</li>`;
-      }).join('') || '<li>No active payers in range</li>';
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,3)
+      .map(([key, count])=>{
+        const [name, phone] = key.split('|');
+        return `<li>${name} (${phone}) — ${count}x</li>`;
+      }).join('') || '<li>No data</li>';
 
-    document.getElementById('supportersCount').innerText = supporters.length;
-  }
-
-  function updateChart(){
-    generateReport();
+    document.getElementById("supportersCount").innerText = supporters.length;
   }
 
   function exportCSV(){
-    let csv="Date,Amount,Method,Name,Contact\n";
-    gateData.forEach(en=>{
-      csv+=`${en.date},${en.amount},${en.paymentMethod},${en.name||''},${en.contact||''}\n`;
+    let csv = "Date,Amount,Method,Name,Contact\n";
+    gateData.forEach(en => {
+      csv += `${en.date},${en.amount},${en.paymentMethod || en.method},${en.name || ""},${en.contact || en.phone || ""}\n`;
     });
-    const blob=new Blob([csv],{type:'text/csv'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download="GateFeeAnalytics.csv";
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "GateFeeAnalytics.csv";
     a.click();
   }
-});
-  
+
+  window.onload = () => {
+    db.ref("gateFeeRecords").once("value").then(snap => {
+      const firebaseGate = Object.values(snap.val() || {});
+      const localGate = JSON.parse(localStorage.getItem("gateFeeData") || "[]");
+      gateData = [...firebaseGate, ...localGate];
+
+      db.ref("supporterRecords").once("value").then(snap2 => {
+        const firebaseSupporters = Object.values(snap2.val() || {});
+        const localSupporters = JSON.parse(localStorage.getItem("supportersData") || "[]");
+        supporters = [...firebaseSupporters, ...localSupporters];
+
+        document.getElementById("supportersCount").innerText = supporters.length;
+        generateReport();
+      });
+    });
+  };
 </script>
 </body>
 </html>
