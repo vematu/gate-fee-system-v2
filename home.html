@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard - Gate Fee System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f2f5;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 10px;
+    }
+
+    .header-logo img {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+
+    .header-logo h2 {
+      margin: 0;
+      font-size: 22px;
+      color: #333;
+    }
+
+    .user-info {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .menu {
+      display: grid;
+      gap: 15px;
+    }
+
+    .menu button {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      padding: 15px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .menu button:hover {
+      background: #388e3c;
+    }
+
+    .menu i {
+      font-size: 20px;
+      width: 25px;
+      text-align: center;
+    }
+
+    .logout {
+      background: #f44336;
+    }
+
+    .logout:hover {
+      background: #d32f2f;
+    }
+
+    .settings-icon {
+      display: none;
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-size: 24px;
+      color: #4CAF50;
+      background: white;
+      padding: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(0,0,0,0.2);
+      z-index: 999;
+      cursor: pointer;
+    }
+
+    .settings-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100%;
+      width: 300px;
+      background: white;
+      box-shadow: -3px 0 10px rgba(0,0,0,0.3);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .settings-content h3 {
+      margin-top: 0;
+    }
+
+    .settings-content label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    .settings-content input {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    .settings-content button {
+      margin-top: 15px;
+      width: 100%;
+      padding: 10px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .settings-content button:hover {
+      background: #388e3c;
+    }
+
+    .close-settings {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 22px;
+      cursor: pointer;
+    }
+
+    .note {
+      font-size: 13px;
+      margin-top: 10px;
+      color: #777;
+    }
+
+    .role-display {
+      font-weight: bold;
+      color: #2e7d32;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<script>
+  const loggedInUser = localStorage.getItem("loggedInUser");
+  if (!loggedInUser) window.location.href = "login.html";
+</script>
+
+<div class="settings-icon" id="settingsIcon" onclick="openSettings()">
+  <i class="fas fa-cog"></i>
+</div>
+
+<div class="container">
+  <div class="header-logo">
+    <img src="logo.jpg" alt="Club Logo" />
+    <h2>Kakumiro Junior FC</h2>
+  </div>
+
+  <div class="user-info">
+    <p>Welcome, <strong id="usernameDisplay"></strong></p>
+  </div>
+
+  <div class="menu" id="menuContainer">
+    <button onclick="location.href='enter-gate-fee.html'"><i class="fas fa-cash-register"></i> Enter Gate Fee</button>
+    <button onclick="location.href='view-data.html'"><i class="fas fa-table"></i> View Records</button>
+    <button onclick="location.href='register-supporter.html'"><i class="fas fa-users"></i> Register Supporter</button>
+    <button onclick="location.href='add-user.html'"><i class="fas fa-user-plus"></i> Add User (Admin)</button>
+    <!-- 📊 Reports button will be inserted here if permitted -->
+    <button class="logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+</div>
+
+<div id="settingsModal" class="settings-modal">
+  <div class="settings-content">
+    <span class="close-settings" onclick="closeSettings()">&times;</span>
+    <h3>⚙️ Settings</h3>
+    <div class="role-display">Logged in as: <span id="modalUserRole"></span></div>
+
+    <h4>👤 Personal Account</h4>
+    <label>Current Password:</label>
+    <input type="password" id="modalCurrentPass" placeholder="Enter current password" />
+    <label>New Password:</label>
+    <input type="password" id="modalNewPass" placeholder="Enter new password" />
+    <button onclick="changeUserPassword()">Change Password</button>
+
+    <hr />
+
+    <div id="adminSettings" style="display:none;">
+      <h4>🛠 Admin Options</h4>
+      <button onclick="syncUsersToFirebase()">Sync All Users</button>
+      <button onclick="clearAllLocalData()">Reset App Data</button>
+      <div class="note">⚠️ This will delete all local data. Use carefully.</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  const users = JSON.parse(localStorage.getItem("gateSystemUsers") || "{}");
+  const user = localStorage.getItem("loggedInUser");
+
+  document.getElementById("usernameDisplay").textContent = user;
+
+  if (user === "admin") {
+    document.getElementById("settingsIcon").style.display = "block";
+    document.getElementById("adminSettings").style.display = "block";
+  }
+
+  document.getElementById("modalUserRole").textContent = user === "admin" ? "Admin" : "User";
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+  }
+
+  function openSettings() {
+    document.getElementById("settingsModal").style.display = "block";
+  }
+
+  function closeSettings() {
+    document.getElementById("settingsModal").style.display = "none";
+  }
+
+  function changeUserPassword() {
+    const current = document.getElementById("modalCurrentPass").value;
+    const newPass = document.getElementById("modalNewPass").value;
+
+    if (!current || !newPass) return alert("Please fill in both fields.");
+    if (users[user]?.password === current) {
+      users[user].password = newPass;
+      localStorage.setItem("gateSystemUsers", JSON.stringify(users));
+      alert("Password changed successfully!");
+      document.getElementById("modalCurrentPass").value = "";
+      document.getElementById("modalNewPass").value = "";
+    } else {
+      alert("Current password is incorrect.");
+    }
+  }
+
+  function syncUsersToFirebase() {
+    Object.entries(users).forEach(([username, data]) => {
+      db.ref("users/" + username).set(data);
+    });
+    alert("Users synced successfully.");
+  }
+
+  function clearAllLocalData() {
+    if (confirm("Are you sure? This will clear ALL app data!")) {
+      localStorage.clear();
+      alert("Local data cleared.");
+      location.reload();
+    }
+  }
+
+  // Add Reports button only for admin or allowed users
+  const userData = users[user] || {};
+  const canViewReports = userData.canViewReports === true;
+
+  if (user === "admin" || canViewReports) {
+    const reportsBtn = document.createElement("button");
+    reportsBtn.innerHTML = `<i class="fas fa-chart-line"></i> View Reports`;
+    reportsBtn.onclick = () => location.href = "reports.html";
+
+    const menu = document.getElementById("menuContainer");
+    const logoutBtn = menu.querySelector(".logout");
+    menu.insertBefore(reportsBtn, logoutBtn);
+  }
+</script>
+
+</body>
+</html>
