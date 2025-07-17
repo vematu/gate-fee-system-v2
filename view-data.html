@@ -113,52 +113,56 @@
   }
 
   function renderTable() {
-    const thead = document.getElementById("tableHeader");
-    const tbody = document.querySelector("#recordTable tbody");
-    tbody.innerHTML = "";
+  const thead = document.getElementById("tableHeader");
+  const tbody = document.querySelector("#recordTable tbody");
+  tbody.innerHTML = "";
 
-    const data = currentTab === 'gate' ? allGateData : allSupporterData;
+  const data = currentTab === 'gate' ? allGateData : allSupporterData;
 
-    if (currentTab === 'gate') {
-      thead.innerHTML = `
-        <tr>
-          <th>Receipt No</th><th>Name</th><th>Phone</th>
-          <th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th>
-        </tr>`;
-      data.forEach(rec => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${rec.receiptNo || ""}</td>
-          <td>${rec.name || ""}</td>
-          <td>${rec.contact || rec.phone || ""}</td>
-          <td>${rec.event || ""}</td>
-          <td>UGX ${rec.amount || 0}</td>
-          <td>${rec.paymentMethod || rec.method || ""}</td>
-          <td>${rec.date || ""}</td>
-          <td>${rec.servedBy || ""}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    } else {
-      thead.innerHTML = `
-        <tr><th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th>
-        <th>Location</th><th>Membership</th><th>Created By</th></tr>`;
-      data.forEach(rec => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${rec.id || ""}</td>
-          <td>${rec.name || ""}</td>
-          <td>${rec.phone || ""}</td>
-          <td>${rec.gender || ""}</td>
-          <td>${rec.age || ""}</td>
-          <td>${rec.location || ""}</td>
-          <td>${rec.membership || ""}</td>
-          <td>${rec.createdBy || ""}</td>
-        `;
-        tbody.appendChild(row);
-      });
-    }
+  if (currentTab === 'gate') {
+    thead.innerHTML = `
+      <tr>
+        <th>Receipt No</th><th>Name</th><th>Phone</th>
+        <th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th><th>Action</th>
+      </tr>`;
+    data.forEach((rec, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${rec.receiptNo || ""}</td>
+        <td>${rec.name || ""}</td>
+        <td>${rec.contact || rec.phone || ""}</td>
+        <td>${rec.event || ""}</td>
+        <td>UGX ${rec.amount || 0}</td>
+        <td>${rec.paymentMethod || rec.method || ""}</td>
+        <td>${rec.date || ""}</td>
+        <td>${rec.servedBy || ""}</td>
+        <td>${currentUser === "admin" ? `<button class="delete-btn" onclick="deleteRecord(${index}, '${rec.receiptNo || ""}')">Delete</button>` : ''}</td>
+      `;
+      tbody.appendChild(row);
+    });
+  } else {
+    thead.innerHTML = `
+      <tr>
+        <th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th>
+        <th>Location</th><th>Membership</th><th>Created By</th><th>Action</th>
+      </tr>`;
+    data.forEach((rec, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${rec.id || ""}</td>
+        <td>${rec.name || ""}</td>
+        <td>${rec.phone || ""}</td>
+        <td>${rec.gender || ""}</td>
+        <td>${rec.age || ""}</td>
+        <td>${rec.location || ""}</td>
+        <td>${rec.membership || ""}</td>
+        <td>${rec.createdBy || ""}</td>
+        <td>${currentUser === "admin" ? `<button class="delete-btn" onclick="deleteRecord(${index}, '${rec.id || ""}')">Delete</button>` : ''}</td>
+      `;
+      tbody.appendChild(row);
+    });
   }
+}
 
   function filterTable() {
     const term = document.getElementById("searchInput").value.toLowerCase();
