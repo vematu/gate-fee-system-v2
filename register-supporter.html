@@ -11,7 +11,6 @@
       padding: 20px;
       background: #e9f5f2;
     }
-
     form {
       background: #fff;
       padding: 25px;
@@ -20,20 +19,17 @@
       border-radius: 12px;
       box-shadow: 0 0 15px rgba(0,0,0,0.15);
     }
-
     h2 {
       text-align: center;
       margin-bottom: 20px;
       font-family: 'Georgia', serif;
       color: #2e7d32;
     }
-
     label {
       display: block;
       margin-top: 12px;
       font-weight: bold;
     }
-
     input, select {
       width: 100%;
       padding: 10px;
@@ -42,7 +38,6 @@
       border-radius: 6px;
       border: 1px solid #ccc;
     }
-
     button {
       width: 100%;
       padding: 14px;
@@ -54,12 +49,9 @@
       cursor: pointer;
       border-radius: 6px;
     }
-
     button:hover {
       background: #388E3C;
     }
-
-    /* Confirmation popup styles */
     #confirmationPopup {
       position: fixed;
       top: 0; left: 0;
@@ -70,7 +62,6 @@
       align-items: center;
       z-index: 9999;
     }
-
     .popup-content {
       background: white;
       padding: 30px;
@@ -79,18 +70,15 @@
       box-shadow: 0 0 15px rgba(0,0,0,0.3);
       max-width: 400px;
     }
-
     .popup-content img {
       width: 80px;
       height: auto;
       margin-bottom: 15px;
     }
-
     .popup-content h3 {
       color: #2e7d32;
       font-size: 22px;
     }
-
     .popup-content .motto {
       font-style: italic;
       font-weight: bold;
@@ -98,7 +86,6 @@
       font-size: 16px;
       color: #333;
     }
-
     .popup-content button {
       padding: 10px 20px;
       font-size: 16px;
@@ -118,11 +105,9 @@
   <label>Full Name:
     <input type="text" name="fullName" required />
   </label>
-
   <label>Phone Number:
     <input type="tel" name="phone" required />
   </label>
-
   <label>Gender:
     <select name="gender" required>
       <option value="">--Select--</option>
@@ -130,28 +115,23 @@
       <option>Female</option>
     </select>
   </label>
-
   <label>Age:
     <input type="number" name="age" required />
   </label>
-
   <label>Location:
     <input type="text" name="location" required />
   </label>
-
   <label>Membership Type:
     <select name="membership" required>
       <option value="">--Select--</option>
-      <option>Ordinary</option>
-      <option>Silver</option>
-      <option>Gold</option>
+      <option>Regular</option>
+      <option>Premium</option>
+      <option>Honorary</option>
     </select>
   </label>
-  
-<label>Supporter Photo:
-        <input type="file" name="photo" accept="image/*" capture="environment" required />
-      </label>
-
+  <label>Photo:
+    <input type="file" name="photo" id="photo" accept="image/*" capture="environment" required />
+  </label>
   <button type="submit">Register</button>
 </form>
 
@@ -180,7 +160,6 @@
     messagingSenderId: "35497617973",
     appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
   const localData = JSON.parse(localStorage.getItem("supporterRecords") || "[]");
@@ -189,123 +168,115 @@
     e.preventDefault();
 
     const data = new FormData(e.target);
-    const entry = {
-      id: "SPT-" + Date.now(),
-      name: data.get("fullName"),
-      phone: data.get("phone"),
-      gender: data.get("gender"),
-      age: data.get("age"),
-      location: data.get("location"),
-      membership: data.get("membership"),
-      photo: base64Photo
-      createdBy: localStorage.getItem("loggedInUser") || "unknown"
+    const file = document.getElementById("photo").files[0];
+    const reader = new FileReader();
+    const id = "SPT-" + Date.now();
+
+    reader.onload = function() {
+      const entry = {
+        id,
+        name: data.get("fullName"),
+        phone: data.get("phone"),
+        gender: data.get("gender"),
+        age: data.get("age"),
+        location: data.get("location"),
+        membership: data.get("membership"),
+        photo: reader.result, // Base64 image
+        createdBy: localStorage.getItem("loggedInUser") || "unknown"
+      };
+
+      localData.push(entry);
+      localStorage.setItem("supporterRecords", JSON.stringify(localData));
+
+      db.ref("supporterRecords/" + entry.id).set(entry)
+        .then(() => {
+          document.getElementById("supporterForm").reset();
+          generateCertificate(entry);
+        })
+        .catch(err => {
+          alert("Saved locally. Sync failed: " + err.message);
+        });
     };
 
-    // Save locally
-    localData.push(entry);
-    localStorage.setItem("supporterRecords", JSON.stringify(localData));
-
-    // Save to Firebase
-    db.ref("supporterRecords/" + entry.id).set(entry)
-      .then(() => {
-        document.getElementById("supporterForm").reset();
-        generateCertificate(entry);
-      })
-      .catch(err => {
-        alert("Saved locally. Sync failed: " + err.message);
-      });
+    if (file) {
+      reader.readAsDataURL(file);
+    }
   });
 
-  // Create PDF and show popup
-  
-    function generateCertificate(entry) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape' });
+  function generateCertificate(entry) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
 
-      doc.setFillColor(240, 255, 240);
-      doc.rect(0, 0, 297, 210, 'F');
+    doc.setFillColor(240, 255, 240);
+    doc.rect(0, 0, 297, 210, 'F');
 
-      const logo = new Image();
-      logo.src = "logo.jpg";
+    const logo = new Image();
+    logo.src = "logo.jpg";
 
-      logo.onload = () => {
-        doc.addImage(logo, 'JPEG', 10, 10, 40, 40);
+    logo.onload = () => {
+      doc.addImage(logo, 'JPEG', 10, 10, 40, 40);
+      doc.setFontSize(24);
+      doc.setTextColor(34, 85, 34);
+      doc.setFont('times', 'bold');
+      doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
 
-        if (entry.photo) {
-          doc.addImage(entry.photo, 'JPEG', 245, 15, 35, 45);
-        }
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Membership Certificate", 148, 85, null, null, 'center');
 
-        doc.setFontSize(24);
-        doc.setTextColor(34, 85, 34);
-        doc.setFont('times', 'bold');
-        doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
+      doc.setFontSize(14);
+      doc.text(`This is to certify that`, 148, 100, null, null, 'center');
+      doc.setFontSize(18);
+      doc.setFont('times', 'bolditalic');
+      doc.text(entry.name, 148, 115, null, null, 'center');
 
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'normal');
-        doc.text("Membership Certificate", 148, 85, null, null, 'center');
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
+      doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
 
-        doc.setFontSize(14);
-        doc.text(`This is to certify that`, 148, 100, null, null, 'center');
+      // Add supporter ID
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+      doc.text(`Supporter ID: ${entry.id}`, 25, 155);
 
-        doc.setFontSize(18);
-        doc.setFont('times', 'bolditalic');
-        doc.text(entry.name, 148, 115, null, null, 'center');
-
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
-        doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
-
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Supporter ID: ${entry.id}`, 25, 185);
-
-        doc.setFontSize(12);
-        doc.setTextColor(120);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
-
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont('courier', 'bolditalic');
-        doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
-
-        const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
-        const blob = doc.output("blob");
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.style.display = "none";
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
-
-        document.getElementById("popupName").innerText = entry.name + " has been registered.";
-        document.getElementById("confirmationPopup").style.display = "flex";
-      };
-    }
-
-    function closePopup() {
-      document.getElementById("confirmationPopup").style.display = "none";
-
-      // Silent download
-      const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
-      const blob = doc.output("blob");
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.style.display = "none";
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      a.remove();
-
-      // Show custom confirmation popup
-      document.getElementById("popupName").innerText = entry.name + " has been registered.";
-      document.getElementById("confirmationPopup").style.display = "flex";
+      // Add supporter photo
+      if (entry.photo) {
+        const img = new Image();
+        img.src = entry.photo;
+        img.onload = () => {
+          doc.addImage(img, 'JPEG', 240, 30, 40, 40);
+          finalizePDF(doc, entry.name);
+        };
+      } else {
+        finalizePDF(doc, entry.name);
+      }
     };
+  }
+
+  function finalizePDF(doc, name) {
+    doc.setFontSize(12);
+    doc.setTextColor(120);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('courier', 'bolditalic');
+    doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
+
+    const fileName = `KakumiroFC_Certificate_${name.replace(/ /g, "_")}.pdf`;
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
+
+    document.getElementById("popupName").innerText = name + " has been registered.";
+    document.getElementById("confirmationPopup").style.display = "flex";
   }
 
   function closePopup() {
