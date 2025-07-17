@@ -201,7 +201,27 @@ Served By : ${entry.servedBy}
         alert("Bluetooth Print Failed: " + err.message);
       }
     }
+    function loadGateFeeData() {
+  if (navigator.onLine) {
+    // Load from Firebase
+    const dbRef = firebase.database().ref("gateFees");
+    dbRef.once("value", snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        displayGateFeeData(Object.values(data));
+        localStorage.setItem("gateFeeRecords", JSON.stringify(Object.values(data))); // Keep local copy
+      } else {
+        displayGateFeeData([]);
+      }
+    });
+  } else {
+    // Offline: Load from localStorage
+    const offlineData = JSON.parse(localStorage.getItem("gateFeeRecords")) || [];
+    displayGateFeeData(offlineData);
+  }
+}
   </script>
 
 </body>
 </html>
+
