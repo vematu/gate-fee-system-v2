@@ -215,6 +215,41 @@
     link.download = currentTab === 'gate' ? "gate_fee_records.csv" : "supporter_records.csv";
     link.click();
   }
+  
+function deleteRecord(index, uniqueKey) {
+  if (!confirm("Are you sure you want to delete this record?")) return;
+
+  let data, keyName, firebaseRef;
+
+  if (currentTab === 'gate') {
+    data = allGateData;
+    keyName = 'receiptNo';
+    firebaseRef = 'gateFeeRecords';
+  } else {
+    data = allSupporterData;
+    keyName = 'id';
+    firebaseRef = 'supporterRecords';
+  }
+
+  const item = data[index];
+
+  // Remove from Firebase
+  db.ref(firebaseRef).orderByChild(keyName).equalTo(uniqueKey).once("value", snapshot => {
+    snapshot.forEach(child => {
+      db.ref(`${firebaseRef}/${child.key}`).remove();
+    });
+  });
+
+  // Remove from LocalStorage
+  let storageKey = currentTab === 'gate' ? 'gateFeeData' : 'supportersData';
+  let localData = JSON.parse(localStorage.getItem(storageKey) || "[]");
+  localData = localData.filter(d => d[keyName] !== uniqueKey);
+  localStorage.setItem(storageKey, JSON.stringify(localData));
+
+  // Remove from view
+  data.splice(index, 1);
+  renderTable();
+}
 
   window.onload = fetchData;
 </script>
