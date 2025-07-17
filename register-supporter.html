@@ -142,11 +142,15 @@
   <label>Membership Type:
     <select name="membership" required>
       <option value="">--Select--</option>
-      <option>Regular</option>
-      <option>Premium</option>
-      <option>Honorary</option>
+      <option>Ordinary</option>
+      <option>Silver</option>
+      <option>Gold</option>
     </select>
   </label>
+  
+<label>Supporter Photo:
+        <input type="file" name="photo" accept="image/*" capture="environment" required />
+      </label>
 
   <button type="submit">Register</button>
 </form>
@@ -193,6 +197,7 @@
       age: data.get("age"),
       location: data.get("location"),
       membership: data.get("membership"),
+      photo: base64Photo
       createdBy: localStorage.getItem("loggedInUser") || "unknown"
     };
 
@@ -212,48 +217,77 @@
   });
 
   // Create PDF and show popup
-  function generateCertificate(entry) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ orientation: 'landscape' });
+  
+    function generateCertificate(entry) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ orientation: 'landscape' });
 
-    doc.setFillColor(240, 255, 240);
-    doc.rect(0, 0, 297, 210, 'F');
+      doc.setFillColor(240, 255, 240);
+      doc.rect(0, 0, 297, 210, 'F');
 
-    const logo = new Image();
-    logo.src = "logo.jpg"; // Ensure logo.jpg exists
+      const logo = new Image();
+      logo.src = "logo.jpg";
 
-    logo.onload = () => {
-      doc.addImage(logo, 'JPEG', 125, 15, 45, 45);
+      logo.onload = () => {
+        doc.addImage(logo, 'JPEG', 10, 10, 40, 40);
 
-      doc.setFontSize(24);
-      doc.setTextColor(34, 85, 34);
-      doc.setFont('times', 'bold');
-      doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
+        if (entry.photo) {
+          doc.addImage(entry.photo, 'JPEG', 245, 15, 35, 45);
+        }
 
-      doc.setFontSize(16);
-      doc.setFont('helvetica', 'normal');
-      doc.text("Membership Certificate", 148, 85, null, null, 'center');
+        doc.setFontSize(24);
+        doc.setTextColor(34, 85, 34);
+        doc.setFont('times', 'bold');
+        doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
 
-      doc.setFontSize(14);
-      doc.text(`This is to certify that`, 148, 100, null, null, 'center');
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'normal');
+        doc.text("Membership Certificate", 148, 85, null, null, 'center');
 
-      doc.setFontSize(18);
-      doc.setFont('times', 'bolditalic');
-      doc.text(entry.name, 148, 115, null, null, 'center');
+        doc.setFontSize(14);
+        doc.text(`This is to certify that`, 148, 100, null, null, 'center');
 
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
-      doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
+        doc.setFontSize(18);
+        doc.setFont('times', 'bolditalic');
+        doc.text(entry.name, 148, 115, null, null, 'center');
 
-      doc.setFontSize(12);
-      doc.setTextColor(120);
-      doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
+        doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
 
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont('courier', 'bolditalic');
-      doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Supporter ID: ${entry.id}`, 25, 185);
+
+        doc.setFontSize(12);
+        doc.setTextColor(120);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
+
+        doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('courier', 'bolditalic');
+        doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
+
+        const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
+        const blob = doc.output("blob");
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = fileName;
+        a.style.display = "none";
+        document.body.appendChild(a);
+        a.click();
+        URL.revokeObjectURL(url);
+        a.remove();
+
+        document.getElementById("popupName").innerText = entry.name + " has been registered.";
+        document.getElementById("confirmationPopup").style.display = "flex";
+      };
+    }
+
+    function closePopup() {
+      document.getElementById("confirmationPopup").style.display = "none";
 
       // Silent download
       const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
