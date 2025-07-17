@@ -8,12 +8,12 @@
   "description": "A mobile-friendly app for managing gate fee payments and supporter registrations.",
   "icons": [
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMgAAADICAMAAACahl6sAAAAIVBMVEUAAAD////AwMD8/Pzt7e3T09PV1dXx8fHb29vNzc3Z2dnJyckivEfyAAACR0lEQVR4nO3bS46EMBAF0JIo//+rOwAIjRZItOtdmrXPKmPzeGf52WR7Zw9tr2vYmTYaMGDBgwIABAwYMGDBggLxv7lOBlauSK+22Rmle1uLUqyr0EbnWd6+XaVrb+tddm2RO2WwQ/P83eW/tkBW9rJsz7+suIvjx7szY4ytTZSn5u2sai/NBd0WvvE7w4fVlPo2Vs+DP+M/3OnWWBmrNxj52LRlPKvMrVrSPZku/fMPw7++p70Gxckm6eI0kNn3rzqvGy7zazVJvWtK33us4pyW/WKWbnOCek+p2tM6eap6Rmh95qX1n1L9s4b7nXx4y9OxF9S+Fz4Z9Gr3msU/TW4WXun7EmvsHrIPfmev2NV8J9OGy/tM2G3jtwv7tDW7fo6r3ea7eL2nwrT6g/o+G9yVdrz2M7JzZf/tsXLw6E52awQf+fIuC2Mi3uCgAICAgICAgICAgICAgICAgICAvwP/gBf04M9qcm5a2AAAAAElFTkSuQmCC",
+      "src": "logo192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAMAAADwN0z8AAAAMFBMVEUAAAD////09PTz8/P8/Pzv7+/x8fHh4eH39/fn5+fo6OjZ2dnY2Njj4+Pv7+/W1tbk5OTV1dXa2traWhR2AAAEjElEQVR4nO3dy47jQAwFUGWg//9n+0dso6lVoSYZ+dlzrKjdAURERERERERERERERERERERERERER0eOB2WvYDr4zNZ+JQW+4T62Wv3dNGT3c7jX9nHgbNV++nZ3c5P+reX+W5cZofGDe7iPbd/F6K/fkL3U03qP7i0Y+ytxXt3V7ZHVud73b/7dv66/OvTfrzq9m/rq2WvWPm5r2iX1u+p8n1+v2/G/Gbvlmsj/bKcdS+5pK7XcoUxnV/SXYl/nRWueh/TZfa9P2my1Nz9NzXTz7s23me2uXm/fre/o3dG5vV3vvxtsXuqXzT69b6s6v8aZx93XzP3fUZHZZ3vqr3z8tZ9vI+03af9eq3vjQ/62pLfwvnmKtz3xod7Z6zx86t3OWm13n3aOxP3aXdb3Hb93PGb1ep97ieeV19t9fOKfr+ru5PPm/We63az0Xq3fc3K5c/mPd3dn0+ufj2d3dv1v/Y3D/NvZ5U+b0X9xnOXxfM8AgICAgICAgICAgICAgICAgICAvwP/gDQ05kl3D8rcAAAAASUVORK5CYII=",
+      "src": "logo512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
