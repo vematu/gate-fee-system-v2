@@ -7,37 +7,44 @@
   <link rel="stylesheet" href="style.css" />
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    .action-buttons {
+      display: flex;
+      gap: 5px;
+    }
+    .delete-btn, .print-btn {
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+    }
+    .print-btn {
+      background-color: #3498db;
+      color: white;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-  <div class="header">
-    <img src="logo.jpg" class="logo-small" alt="Logo" />
-    <h2>Kakumiro Junior FC Records</h2>
-    <button onclick="goBack()" class="back-btn">← Back</button>
+  <div class="logo-container"><img src="logo.jpg" alt="Logo" class="top-logo"></div>
+  <h2>View Records</h2>
+  <div class="tabs">
+    <button onclick="showTab('gate')" class="tab active">Gate Fee Records</button>
+    <button onclick="showTab('supporter')" class="tab">Supporter Records</button>
   </div>
-
-  <div class="tab-buttons">
-    <button onclick="switchTab('gate')" id="gateTab" class="active">Gate Collection</button>
-    <button onclick="switchTab('supporters')" id="supportersTab">Supporters</button>
-  </div>
-
-  <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search..." />
-
+  <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search records..." />
+  <table id="recordTable">
+    <thead></thead>
+    <tbody></tbody>
+  </table>
   <button onclick="exportCSV()">Export CSV</button>
-
-  <div class="table-container">
-    <table id="recordTable">
-      <thead></thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <footer><p><strong>One Team, One Dream</strong></p></footer>
 
   <script>
-    const currentUser = localStorage.getItem('currentUser') || 'user';
-    let currentTab = 'gate';
-    let allGateData = [];
-    let allSupporterData = [];
-
     const firebaseConfig = {
       apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
       authDomain: "gate-fee-system.firebaseapp.com",
@@ -50,164 +57,159 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function switchTab(tab) {
+    let currentTab = "gate";
+    let allGateData = [];
+    let allSupporterData = [];
+    let currentUser = localStorage.getItem("currentUser") || "";
+
+    function showTab(tab) {
       currentTab = tab;
-      document.getElementById("gateTab").classList.remove("active");
-      document.getElementById("supportersTab").classList.remove("active");
-      document.getElementById(tab + "Tab").classList.add("active");
+      document.querySelectorAll(".tab").forEach(btn => btn.classList.remove("active"));
+      document.querySelector(`.tab.${tab}`)?.classList.add("active");
       renderTable();
     }
 
-    function goBack() {
-      window.history.back();
-    }
-
-    function fetchData() {
-      allGateData = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-      allSupporterData = JSON.parse(localStorage.getItem("supportersData") || "[]");
-
-      db.ref("gateFees").once("value", snapshot => {
-        const firebaseGateData = snapshot.val() || {};
-        Object.values(firebaseGateData).forEach(rec => {
-          if (!allGateData.find(r => r.receiptNo === rec.receiptNo)) {
-            allGateData.push(rec);
-          }
-        });
-      });
-
-      db.ref("supporters").once("value", snapshot => {
-        const firebaseSupporters = snapshot.val() || {};
-        Object.values(firebaseSupporters).forEach(rec => {
-          if (!allSupporterData.find(r => r.id === rec.id)) {
-            allSupporterData.push(rec);
-          }
-        });
-      });
-
-      setTimeout(renderTable, 1500);
-    }
-
     function renderTable() {
-      const tbody = document.querySelector("#recordTable tbody");
       const thead = document.querySelector("#recordTable thead");
+      const tbody = document.querySelector("#recordTable tbody");
       tbody.innerHTML = "";
 
       if (currentTab === "gate") {
         thead.innerHTML = `<tr>
-          <th>Receipt No</th><th>Name</th><th>Phone</th><th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th><th>Actions</th>
+          <th>Receipt No</th><th>Name</th><th>Phone</th><th>Event</th><th>Amount</th><th>Method</th><th>Date</th><th>Served By</th>
+          ${currentUser === "admin" ? "<th>Actions</th>" : ""}
         </tr>`;
         allGateData.forEach((rec, index) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${rec.receiptNo || ""}</td>
-            <td>${rec.name || ""}</td>
-            <td>${rec.contact || rec.phone || ""}</td>
-            <td>${rec.event || ""}</td>
-            <td>UGX ${rec.amount || 0}</td>
-            <td>${rec.paymentMethod || rec.method || ""}</td>
-            <td>${rec.date || ""}</td>
-            <td>${rec.servedBy || ""}</td>
-            <td>
-              ${currentUser === 'admin' ? `<button onclick="deleteRecord('gate', '${rec.receiptNo}')">Delete</button>` : ""}
-              <button onclick='printReceipt(${JSON.stringify(rec)})'>Print</button>
-            </td>`;
+            <td>${rec.receiptNo || ""}</td><td>${rec.name || ""}</td><td>${rec.contact || rec.phone || ""}</td>
+            <td>${rec.event || ""}</td><td>UGX ${rec.amount || 0}</td><td>${rec.paymentMethod || rec.method || ""}</td>
+            <td>${rec.date || ""}</td><td>${rec.servedBy || ""}</td>
+            ${currentUser === "admin" ? `<td class="action-buttons">
+              <button class="print-btn" onclick="printGateRecord(${index})">Print</button>
+              <button class="delete-btn" onclick="deleteGateRecord(${index})">Delete</button>
+            </td>` : ""}
+          `;
           tbody.appendChild(row);
         });
       } else {
         thead.innerHTML = `<tr>
-          <th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th><th>Location</th><th>Membership</th><th>Created By</th><th>Actions</th>
+          <th>ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Age</th><th>Location</th><th>Membership</th><th>Created By</th>
+          ${currentUser === "admin" ? "<th>Actions</th>" : ""}
         </tr>`;
-        allSupporterData.forEach(rec => {
+        allSupporterData.forEach((rec, index) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${rec.id || ""}</td>
-            <td>${rec.name || ""}</td>
-            <td>${rec.phone || ""}</td>
-            <td>${rec.gender || ""}</td>
-            <td>${rec.age || ""}</td>
-            <td>${rec.location || ""}</td>
-            <td>${rec.membership || ""}</td>
-            <td>${rec.createdBy || ""}</td>
-            <td>
-              ${currentUser === 'admin' ? `<button onclick="deleteRecord('supporters', '${rec.id}')">Delete</button>` : ""}
-            </td>`;
+            <td>${rec.id || ""}</td><td>${rec.name || ""}</td><td>${rec.phone || ""}</td><td>${rec.gender || ""}</td>
+            <td>${rec.age || ""}</td><td>${rec.location || ""}</td><td>${rec.membership || ""}</td><td>${rec.createdBy || ""}</td>
+            ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteSupporter(${index})">Delete</button></td>` : ""}
+          `;
           tbody.appendChild(row);
         });
       }
     }
 
-    function deleteRecord(type, key) {
-      if (!confirm("Are you sure you want to delete this record?")) return;
-      const refPath = type === "gate" ? "gateFees" : "supporters";
-      db.ref(refPath).orderByChild(type === "gate" ? "receiptNo" : "id").equalTo(key).once("value", snapshot => {
-        snapshot.forEach(child => child.ref.remove());
-      });
-
-      if (type === "gate") {
-        allGateData = allGateData.filter(r => r.receiptNo !== key);
-        localStorage.setItem("gateFeeRecords", JSON.stringify(allGateData));
-      } else {
-        allSupporterData = allSupporterData.filter(r => r.id !== key);
-        localStorage.setItem("supportersData", JSON.stringify(allSupporterData));
-      }
-
+    function deleteGateRecord(index) {
+      if (!confirm("Delete this gate record?")) return;
+      const rec = allGateData[index];
+      allGateData.splice(index, 1);
+      localStorage.setItem("gateRecords", JSON.stringify(allGateData));
+      if (rec.firebaseKey) db.ref("gateRecords/" + rec.firebaseKey).remove();
       renderTable();
     }
 
-    function printReceipt(rec) {
-      const content = `
-        <center>
-        <h3>Kakumiro Junior FC</h3>
-        <p><b>Receipt No:</b> ${rec.receiptNo}</p>
-        <p><b>Name:</b> ${rec.name}</p>
-        <p><b>Phone:</b> ${rec.contact || rec.phone}</p>
-        <p><b>Event:</b> ${rec.event}</p>
-        <p><b>Amount:</b> UGX ${rec.amount}</p>
-        <p><b>Payment:</b> ${rec.paymentMethod}</p>
-        <p><b>Date:</b> ${rec.date}</p>
-        <p><b>Served By:</b> ${rec.servedBy}</p>
-        <hr>
-        <strong>One Team, One Dream</strong>
-        </center>
-      `;
-      const win = window.open("", "_blank");
-      win.document.write(`<html><head><title>Receipt</title></head><body>${content}</body></html>`);
+    function deleteSupporter(index) {
+      if (!confirm("Delete this supporter record?")) return;
+      const rec = allSupporterData[index];
+      allSupporterData.splice(index, 1);
+      localStorage.setItem("supportersData", JSON.stringify(allSupporterData));
+      if (rec.firebaseKey) db.ref("supporters/" + rec.firebaseKey).remove();
+      renderTable();
+    }
+
+    function printGateRecord(index) {
+      const rec = allGateData[index];
+      const win = window.open("", "", "width=300,height=600");
+      win.document.write(`
+        <pre style="text-align:center;font-family:monospace">
+KAKUMIRO JUNIOR FC
+--------------------------
+Receipt No: ${rec.receiptNo || ""}
+Name      : ${rec.name || ""}
+Contact   : ${rec.contact || ""}
+Event     : ${rec.event || ""}
+Amount    : UGX ${rec.amount || 0}
+Method    : ${rec.paymentMethod || ""}
+Date      : ${rec.date || ""}
+Served By : ${rec.servedBy || ""}
+--------------------------
+  One Team, One Dream
+        </pre>
+      `);
+      win.document.close();
       win.print();
-      win.close();
     }
 
     function filterTable() {
       const term = document.getElementById("searchInput").value.toLowerCase();
-      const data = currentTab === 'gate' ? allGateData : allSupporterData;
-      const filtered = data.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(term)));
-      if (currentTab === "gate") allGateData = filtered;
-      else allSupporterData = filtered;
-      renderTable();
+      const tbody = document.querySelector("#recordTable tbody");
+      const data = currentTab === "gate" ? allGateData : allSupporterData;
+      tbody.innerHTML = "";
+
+      const filtered = data.filter(r => Object.values(r).some(v =>
+        String(v).toLowerCase().includes(term)
+      ));
+
+      filtered.forEach((rec, index) => {
+        const row = document.createElement("tr");
+        if (currentTab === "gate") {
+          row.innerHTML = `
+            <td>${rec.receiptNo || ""}</td><td>${rec.name || ""}</td><td>${rec.contact || rec.phone || ""}</td>
+            <td>${rec.event || ""}</td><td>UGX ${rec.amount || 0}</td><td>${rec.paymentMethod || rec.method || ""}</td>
+            <td>${rec.date || ""}</td><td>${rec.servedBy || ""}</td>
+            ${currentUser === "admin" ? `<td class="action-buttons">
+              <button class="print-btn" onclick="printGateRecord(${index})">Print</button>
+              <button class="delete-btn" onclick="deleteGateRecord(${index})">Delete</button>
+            </td>` : ""}
+          `;
+        } else {
+          row.innerHTML = `
+            <td>${rec.id || ""}</td><td>${rec.name || ""}</td><td>${rec.phone || ""}</td><td>${rec.gender || ""}</td>
+            <td>${rec.age || ""}</td><td>${rec.location || ""}</td><td>${rec.membership || ""}</td><td>${rec.createdBy || ""}</td>
+            ${currentUser === "admin" ? `<td><button class="delete-btn" onclick="deleteSupporter(${index})">Delete</button></td>` : ""}
+          `;
+        }
+        tbody.appendChild(row);
+      });
     }
 
     function exportCSV() {
-      const data = currentTab === 'gate' ? allGateData : allSupporterData;
+      const data = currentTab === "gate" ? allGateData : allSupporterData;
       let csv = "";
-      if (currentTab === 'gate') {
+      if (currentTab === "gate") {
         csv = "Receipt No,Name,Phone,Event,Amount,Method,Date,Served By\n";
         data.forEach(d => {
-          csv += `${d.receiptNo},${d.name},${d.contact || d.phone},${d.event},${d.amount},${d.paymentMethod},${d.date},${d.servedBy}\n`;
+          csv += `${d.receiptNo || ""},${d.name || ""},${d.contact || d.phone || ""},${d.event || ""},${d.amount || 0},${d.paymentMethod || d.method || ""},${d.date || ""},${d.servedBy || ""}\n`;
         });
       } else {
         csv = "ID,Name,Phone,Gender,Age,Location,Membership,Created By\n";
         data.forEach(d => {
-          csv += `${d.id},${d.name},${d.phone},${d.gender},${d.age},${d.location},${d.membership},${d.createdBy}\n`;
+          csv += `${d.id || ""},${d.name || ""},${d.phone || ""},${d.gender || ""},${d.age || ""},${d.location || ""},${d.membership || ""},${d.createdBy || ""}\n`;
         });
       }
 
       const blob = new Blob([csv], { type: "text/csv" });
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = currentTab === 'gate' ? "gate_fee_records.csv" : "supporter_records.csv";
+      link.download = currentTab === "gate" ? "gate_fee_records.csv" : "supporter_records.csv";
       link.click();
     }
 
-    window.onload = fetchData;
+    window.onload = function () {
+      allGateData = JSON.parse(localStorage.getItem("gateRecords")) || [];
+      allSupporterData = JSON.parse(localStorage.getItem("supportersData")) || [];
+      renderTable();
+    };
   </script>
 </body>
 </html>
