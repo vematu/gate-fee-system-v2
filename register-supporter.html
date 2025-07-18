@@ -3,193 +3,286 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Register Supporter - Kakumiro Junior FC</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <title>Register Supporter</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #e9f5f2;
+    }
+    form {
+      background: #fff;
+      padding: 25px;
+      max-width: 600px;
+      margin: auto;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-family: 'Georgia', serif;
+      color: #2e7d32;
+    }
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      margin-top: 25px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    button:hover {
+      background: #388E3C;
+    }
+    #confirmationPopup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    .popup-content {
+      background: white;
+      padding: 30px;
+      text-align: center;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      max-width: 400px;
+    }
+    .popup-content img {
+      width: 80px;
+      height: auto;
+      margin-bottom: 15px;
+    }
+    .popup-content h3 {
+      color: #2e7d32;
+      font-size: 22px;
+    }
+    .popup-content .motto {
+      font-style: italic;
+      font-weight: bold;
+      margin: 10px 0;
+      font-size: 16px;
+      color: #333;
+    }
+    .popup-content button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <img src="logo.jpg" alt="Kakumiro Junior FC Logo" class="logo center-logo" />
-    <h1>Supporter Registration</h1>
-    <form id="supporterForm">
-      <label>Full Name:
-        <input type="text" name="fullName" required />
-      </label>
-      <label>Phone Number:
-        <input type="tel" name="phone" required />
-      </label>
-      <label>Gender:
-        <select name="gender" required>
-          <option value="">--Select--</option>
-          <option>Male</option>
-          <option>Female</option>
-        </select>
-      </label>
-      <label>Age:
-        <input type="number" name="age" required />
-      </label>
-      <label>Location:
-        <input type="text" name="location" required />
-      </label>
-      <label>Membership Type:
-        <select name="membership" required>
-          <option value="">--Select--</option>
-          <option>Ordinary</option>
-          <option>Silver</option>
-          <option>Gold</option>
-        </select>
-      </label>
-      
-      <!-- ✅ New: Photo Upload Field -->
-      <label>Supporter Photo:
-        <input type="file" name="photo" accept="image/*" capture="environment" required />
-      </label>
 
-      <button type="submit">Register</button>
-    </form>
+<h2>Register Supporter</h2>
+
+<form id="supporterForm">
+  <label>Full Name:
+    <input type="text" name="fullName" required />
+  </label>
+  <label>Phone Number:
+    <input type="tel" name="phone" required />
+  </label>
+  <label>Gender:
+    <select name="gender" required>
+      <option value="">--Select--</option>
+      <option>Male</option>
+      <option>Female</option>
+    </select>
+  </label>
+  <label>Age:
+    <input type="number" name="age" required />
+  </label>
+  <label>Location:
+    <input type="text" name="location" required />
+  </label>
+  <label>Membership Type:
+    <select name="membership" required>
+      <option value="">--Select--</option>
+      <option>Regular</option>
+      <option>Premium</option>
+      <option>Honorary</option>
+    </select>
+  </label>
+  <label>Photo:
+    <input type="file" name="photo" id="photo" accept="image/*" capture="environment" required />
+  </label>
+  <button type="submit">Register</button>
+</form>
+
+<!-- Confirmation Popup -->
+<div id="confirmationPopup">
+  <div class="popup-content">
+    <img src="logo.jpg" alt="Club Logo" />
+    <h3>🎉 Supporter Registered!</h3>
+    <p id="popupName"></p>
+    <div class="motto">One Team, One Dream</div>
+    <button onclick="closePopup()">Close</button>
   </div>
+</div>
 
-  <!-- Confirmation Popup -->
-  <div id="confirmationPopup" class="popup">
-    <div class="popup-content">
-      <h3>Supporter Registered!</h3>
-      <p id="popupName"></p>
-      <button onclick="closePopup()">OK</button>
-    </div>
-  </div>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
-  <script>
-    // Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-      authDomain: "gate-fee-system.firebaseapp.com",
-      databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-      projectId: "gate-fee-system",
-      storageBucket: "gate-fee-system.appspot.com",
-      messagingSenderId: "35497617973",
-      appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+    authDomain: "gate-fee-system.firebaseapp.com",
+    databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+    projectId: "gate-fee-system",
+    storageBucket: "gate-fee-system.appspot.com",
+    messagingSenderId: "35497617973",
+    appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const localData = JSON.parse(localStorage.getItem("supporterRecords") || "[]");
+
+  document.getElementById("supporterForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const data = new FormData(e.target);
+    const file = document.getElementById("photo").files[0];
+    const reader = new FileReader();
+    const id = "SPT-" + Date.now();
+
+    reader.onload = function() {
+      const entry = {
+        id,
+        name: data.get("fullName"),
+        phone: data.get("phone"),
+        gender: data.get("gender"),
+        age: data.get("age"),
+        location: data.get("location"),
+        membership: data.get("membership"),
+        photo: reader.result, // Base64 image
+        createdBy: localStorage.getItem("loggedInUser") || "unknown"
+      };
+
+      localData.push(entry);
+      localStorage.setItem("supporterRecords", JSON.stringify(localData));
+
+      db.ref("supporterRecords/" + entry.id).set(entry)
+        .then(() => {
+          document.getElementById("supporterForm").reset();
+          generateCertificate(entry);
+        })
+        .catch(err => {
+          alert("Saved locally. Sync failed: " + err.message);
+        });
     };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
 
-    const localData = JSON.parse(localStorage.getItem("supporterRecords") || "[]");
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  });
 
-    document.getElementById("supporterForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-      const data = new FormData(e.target);
-      const photoFile = data.get("photo");
+  function generateCertificate(entry) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'landscape' });
 
-      if (!photoFile) return alert("Please provide a photo.");
+    doc.setFillColor(240, 255, 240);
+    doc.rect(0, 0, 297, 210, 'F');
 
-      const reader = new FileReader();
+    const logo = new Image();
+    logo.src = "logo.jpg";
 
-      reader.onload = function () {
-        const base64Photo = reader.result;
+    logo.onload = () => {
+      doc.addImage(logo, 'JPEG', 10, 10, 40, 40);
+      doc.setFontSize(24);
+      doc.setTextColor(34, 85, 34);
+      doc.setFont('times', 'bold');
+      doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
 
-        const entry = {
-          id: "SPT-" + Date.now(),
-          name: data.get("fullName"),
-          phone: data.get("phone"),
-          gender: data.get("gender"),
-          age: data.get("age"),
-          location: data.get("location"),
-          membership: data.get("membership"),
-          createdBy: localStorage.getItem("loggedInUser") || "unknown",
-          photo: base64Photo
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'normal');
+      doc.text("Membership Certificate", 148, 85, null, null, 'center');
+
+      doc.setFontSize(14);
+      doc.text(`This is to certify that`, 148, 100, null, null, 'center');
+      doc.setFontSize(18);
+      doc.setFont('times', 'bolditalic');
+      doc.text(entry.name, 148, 115, null, null, 'center');
+
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
+      doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
+
+      // Add supporter ID
+      doc.setFontSize(12);
+      doc.setTextColor(100);
+      doc.text(`Supporter ID: ${entry.id}`, 25, 155);
+
+      // Add supporter photo
+      if (entry.photo) {
+        const img = new Image();
+        img.src = entry.photo;
+        img.onload = () => {
+          doc.addImage(img, 'JPEG', 240, 30, 40, 40);
+          finalizePDF(doc, entry.name);
         };
+      } else {
+        finalizePDF(doc, entry.name);
+      }
+    };
+  }
 
-        localData.push(entry);
-        localStorage.setItem("supporterRecords", JSON.stringify(localData));
+  function finalizePDF(doc, name) {
+    doc.setFontSize(12);
+    doc.setTextColor(120);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('courier', 'bolditalic');
+    doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
 
-        const firebaseEntry = { ...entry };
-        delete firebaseEntry.photo;
+    const fileName = `KakumiroFC_Certificate_${name.replace(/ /g, "_")}.pdf`;
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(url);
+    a.remove();
 
-        db.ref("supporterRecords/" + entry.id).set(firebaseEntry)
-          .then(() => {
-            document.getElementById("supporterForm").reset();
-            generateCertificate(entry);
-          })
-          .catch(err => {
-            alert("Saved locally. Sync failed: " + err.message);
-          });
-      };
+    document.getElementById("popupName").innerText = name + " has been registered.";
+    document.getElementById("confirmationPopup").style.display = "flex";
+  }
 
-      reader.readAsDataURL(photoFile);
-    });
+  function closePopup() {
+    document.getElementById("confirmationPopup").style.display = "none";
+  }
+</script>
 
-    function generateCertificate(entry) {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF({ orientation: 'landscape' });
-
-      doc.setFillColor(240, 255, 240);
-      doc.rect(0, 0, 297, 210, 'F');
-
-      const logo = new Image();
-      logo.src = "logo.jpg";
-
-      logo.onload = () => {
-        doc.addImage(logo, 'JPEG', 10, 10, 40, 40);
-
-        if (entry.photo) {
-          doc.addImage(entry.photo, 'JPEG', 245, 15, 35, 45);
-        }
-
-        doc.setFontSize(24);
-        doc.setTextColor(34, 85, 34);
-        doc.setFont('times', 'bold');
-        doc.text("KAKUMIRO JUNIOR FC", 148, 70, null, null, 'center');
-
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'normal');
-        doc.text("Membership Certificate", 148, 85, null, null, 'center');
-
-        doc.setFontSize(14);
-        doc.text(`This is to certify that`, 148, 100, null, null, 'center');
-
-        doc.setFontSize(18);
-        doc.setFont('times', 'bolditalic');
-        doc.text(entry.name, 148, 115, null, null, 'center');
-
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`is a proud ${entry.membership} member`, 148, 130, null, null, 'center');
-        doc.text(`of Kakumiro Junior FC, supporting the club as a true fan.`, 148, 140, null, null, 'center');
-
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text(`Supporter ID: ${entry.id}`, 25, 185);
-
-        doc.setFontSize(12);
-        doc.setTextColor(120);
-        doc.text(`Date: ${new Date().toLocaleDateString()}`, 25, 195);
-
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont('courier', 'bolditalic');
-        doc.text("“One Team, One Dream”", 270, 195, null, null, 'right');
-
-        const fileName = `KakumiroFC_Certificate_${entry.name.replace(/ /g, "_")}.pdf`;
-        const blob = doc.output("blob");
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = fileName;
-        a.style.display = "none";
-        document.body.appendChild(a);
-        a.click();
-        URL.revokeObjectURL(url);
-        a.remove();
-
-        document.getElementById("popupName").innerText = entry.name + " has been registered.";
-        document.getElementById("confirmationPopup").style.display = "flex";
-      };
-    }
-
-    function closePopup() {
-      document.getElementById("confirmationPopup").style.display = "none";
-    }
-  </script>
 </body>
 </html>
