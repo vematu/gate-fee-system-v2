@@ -127,9 +127,9 @@
       `;
       box.style.display = "block";
     }
-
-    async function bluetoothPrint(entry) {
-      const text = `
+    
+async function bluetoothPrint(entry) {
+  const text = `
 ============================
        KAKUMIRO JUNIOR FC
            EST. 2020
@@ -146,32 +146,31 @@ Date      : ${entry.date}
 Served By : ${entry.servedBy}
 
 ============================
-  One Team, One Dream
+   One Team, One Dream
 ============================
 
+\n\n\n`;
 
-\n\n\n`; // Paper feed for tear-off
+  try {
+    const device = await navigator.bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: [0x1101] // Serial Port Profile
+    });
 
-      const encoder = new TextEncoder();
-      const data = encoder.encode(text);
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(0x1101);
+    const characteristic = await service.getCharacteristic(0x2A56); // or appropriate writable characteristic
 
-      try {
-        if (!savedPort) {
-          savedPort = await navigator.serial.requestPort();
-          await savedPort.open({ baudRate: 9600 });
-        }
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
 
-        const writer = savedPort.writable.getWriter();
-        await writer.write(data);
-        writer.releaseLock();
-
-        console.log("Printed successfully.");
-      } catch (err) {
-        console.error("Printing failed:", err.message);
-        alert("Bluetooth Print Failed: " + err.message);
-        savedPort = null;
-      }
-    }
+    await characteristic.writeValue(data);
+    alert("Receipt sent to Bluetooth printer.");
+  } catch (error) {
+    console.error("Bluetooth Print Failed:", error.message);
+    alert("Bluetooth Print Failed: " + error.message);
+  }
+}
   </script>
 
 </body>
