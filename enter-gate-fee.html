@@ -128,8 +128,8 @@
       box.style.display = "block";
     }
     
-async function bluetoothPrint(entry) {
-  const text = `
+    async function bluetoothPrint(entry) {
+      const text = `
 ============================
        KAKUMIRO JUNIOR FC
            EST. 2020
@@ -149,26 +149,44 @@ Served By : ${entry.servedBy}
    One Team, One Dream
 ============================
 
+
 \n\n\n`;
 
-  try {
-    const device = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [0x1101] // Serial Port Profile
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+
+      try {
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
+
+        const writer = port.writable.getWriter();
+        await writer.write(data);
+        writer.releaseLock();
+        await port.close();
+
+        console.log("Printed successfully.");
+      } catch (err) {
+        console.error("Bluetooth Print Failed:", err.message);
+        alert("Bluetooth Print Failed: " + err.message);
+      }
+    }
+    function loadGateFeeData() {
+  if (navigator.onLine) {
+    // Load from Firebase
+    const dbRef = firebase.database().ref("gateFees");
+    dbRef.once("value", snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        displayGateFeeData(Object.values(data));
+        localStorage.setItem("gateFeeRecords", JSON.stringify(Object.values(data))); // Keep local copy
+      } else {
+        displayGateFeeData([]);
+      }
     });
-
-    const server = await device.gatt.connect();
-    const service = await server.getPrimaryService(0x1101);
-    const characteristic = await service.getCharacteristic(0x2A56); // or appropriate writable characteristic
-
-    const encoder = new TextEncoder();
-    const data = encoder.encode(text);
-
-    await characteristic.writeValue(data);
-    alert("Receipt sent to Bluetooth printer.");
-  } catch (error) {
-    console.error("Bluetooth Print Failed:", error.message);
-    alert("Bluetooth Print Failed: " + error.message);
+  } else {
+    // Offline: Load from localStorage
+    const offlineData = JSON.parse(localStorage.getItem("gateFeeRecords")) || [];
+    displayGateFeeData(offlineData);
   }
 }
   </script>
