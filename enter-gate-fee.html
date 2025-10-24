@@ -129,25 +129,26 @@
     }
     
     async function bluetoothPrint(entry) {
-      const box = document.getElementById("receiptBox");
-            box.innerHTML = `
-              <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
-              <h3>KAKUMIRO BOOMA FC</h3>
-              <p><strong>EST. 2012</strong></p>
-              <p style="font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
-              <p><strong>Receipt No:</strong><br>${entry.receiptNo}</p>
-              <p><strong>Name:</strong><br>${entry.name || '-'}</p>
-              <p><strong>Phone:</strong><br>${entry.phone || '-'}</p>
-              <p><strong>Event:</strong><br>${entry.event}</p>
-              <p><strong>Amount Paid:</strong><br>UGX ${entry.amount}</p>
-              <p><strong>Payment Method:</strong><br>${entry.method}</p>
-              <p><strong>Date:</strong><br>${entry.date}</p>
-              <p><strong>Served By:</strong><br>${entry.servedBy}</p>
-              <p style="margin-top:15px;">We appreciate your support!</p>
-              <p class="team-motto">One Team, One Dream</p>
-            `;
-            box.style.display = "block";
-          }
+      const text = `
+============================
+<div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
+       KAKUMIRO BOOMA FC
+           EST. 2016
+         GATE RECEIPT
+============================
+
+Receipt No: ${entry.receiptNo}
+Name      : ${entry.name || '-'}
+Phone     : ${entry.phone || '-'}
+Event     : ${entry.event}
+Amount    : UGX ${entry.amount}
+Method    : ${entry.method}
+Date      : ${entry.date}
+Served By : ${entry.servedBy}
+
+============================
+   One Team, One Dream
+============================
 
 
 \n\n\n`;
