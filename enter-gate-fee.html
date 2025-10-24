@@ -128,7 +128,7 @@
       box.style.display = "block";
     }
     
-    async function bluetoothPrint(entry) {
+    async function printReceiptAsPdf(entry) {
       const box = document.getElementById("receiptBox");
             box.innerHTML = `
               <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
@@ -147,6 +147,7 @@
               <p class="team-motto">One Team, One Dream</p>
             `;
             box.style.display = "block";
+      window.print();
           }
 
 
