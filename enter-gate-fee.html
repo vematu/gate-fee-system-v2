@@ -1,196 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Kakumiro Booma Gate Collection</title>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
-    h2 { text-align: center; margin-bottom: 20px; }
-    .logo-top { display: block; margin: 0 auto 20px; width: 120px; max-height: 120px; object-fit: contain; box-shadow: 0 0 8px rgba(0,0,0,0.2); border-radius: 10px; }
-    form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    label { display: block; margin-top: 10px; }
-    input, select { width: 100%; padding: 10px; margin-top: 5px; }
-    button { width: 100%; padding: 12px; margin-top: 15px; background: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
-    .receipt { max-width: 500px; margin: 20px auto; padding: 20px; border: 2px dashed #000; background: #fff; display: none; position: relative; text-align: center; }
-    .receipt-logo img { max-width: 80px; margin-bottom: 10px; }
-    .team-motto { font-family: 'Georgia', serif; font-weight: bold; font-size: 16px; margin-top: 20px; }
-    @media print {
-      body * { visibility: hidden; }
-      .receipt, .receipt * { visibility: visible; }
-      .receipt { position: absolute; top: 0; left: 0; width: 100%; }
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kakumiro Booma Gate Collection</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    .logo-top { display: block; margin: 0 auto 20px; width: 120px; max-height: 120px; object-fit: contain; box-shadow: 0 0 8px rgba(0,0,0,0.2); border-radius: 10px; }
+    form { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    label { display: block; margin-top: 10px; }
+    input, select { width: 100%; padding: 10px; margin-top: 5px; }
+    button { width: 100%; padding: 12px; margin-top: 15px; background: #4CAF50; color: white; border: none; font-size: 16px; cursor: pointer; }
+    .receipt { max-width: 500px; margin: 20px auto; padding: 20px; border: 2px dashed #000; background: #fff; display: none; position: relative; text-align: center; }
+    .receipt-logo img { max-width: 80px; margin-bottom: 10px; }
+    .team-motto { font-family: 'Georgia', serif; font-weight: bold; font-size: 16px; margin-top: 20px; }
+    @media print {
+      body * { visibility: hidden; }
+      .receipt, .receipt * { visibility: visible; }
+      .receipt { position: absolute; top: 0; left: 0; width: 100%; }
+    }
+  </style>
 </head>
 <body>
 
-  <!-- Club Logo on Top -->
-  <img src="logo.jpg" alt="Club Logo" class="logo-top" />
-  <h2>Kakumiro Booma Gate Collection</h2>
+    <img src="logo.jpg" alt="Club Logo" class="logo-top" />
+  <h2>Kakumiro Booma Gate Collection</h2>
 
-  <form id="gateForm">
-    <label>Full Name: <input type="text" name="fullName" /></label>
-    <label>Phone Number: <input type="tel" name="phone" /></label>
-    <label>Event Name: <input type="text" name="eventName" required /></label>
-    <label>Amount Paid (UGX): <input type="number" name="amount" required /></label>
-    <label>Payment Method:
-      <select name="paymentMethod" required>
-        <option>Cash</option>
-        <option>Mobile Money</option>
-        <option>Card</option>
-      </select>
-    </label>
-    <label>Date of Payment: <input type="date" name="paymentDate" id="paymentDate" required /></label>
-    <label>Signature of Payer: <input type="text" name="signature" /></label>
-    <button type="submit">Submit & Print</button>
-  </form>
+  <form id="gateForm">
+    <label>Full Name: <input type="text" name="fullName" /></label>
+    <label>Phone Number: <input type="tel" name="phone" /></label>
+    <label>Event Name: <input type="text" name="eventName" required /></label>
+    <label>Amount Paid (UGX): <input type="number" name="amount" required /></label>
+    <label>Payment Method:
+      <select name="paymentMethod" required>
+        <option>Cash</option>
+        <option>Mobile Money</option>
+        <option>Card</option>
+      </select>
+    </label>
+    <label>Date of Payment: <input type="date" name="paymentDate" id="paymentDate" required /></label>
+    <label>Signature of Payer: <input type="text" name="signature" /></label>
+    <button type="submit">Submit & Print</button>
+  </form>
 
-  <div class="receipt" id="receiptBox"></div>
+  <div class="receipt" id="receiptBox"></div>
 
-  <script>
-    // Set today's date
-    document.getElementById("paymentDate").valueAsDate = new Date();
+  <script>
+    // Set today's date
+    document.getElementById("paymentDate").valueAsDate = new Date();
 
-    // Firebase setup
-    const firebaseConfig = {
-      apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
-      authDomain: "gate-fee-system.firebaseapp.com",
-      databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
-      projectId: "gate-fee-system",
-      storageBucket: "gate-fee-system.appspot.com",
-      messagingSenderId: "35497617973",
-      appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    // Firebase setup
+    const firebaseConfig = {
+      apiKey: "AIzaSyCOtWnclREDvlceNlpUFdUsjEy--zCCWww",
+      authDomain: "gate-fee-system.firebaseapp.com",
+      databaseURL: "https://gate-fee-system-default-rtdb.firebaseio.com",
+      projectId: "gate-fee-system",
+      storageBucket: "gate-fee-system.appspot.com",
+      messagingSenderId: "35497617973",
+      appId: "1:35497617973:web:ffb46ac4d5ea50206fdf7c"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    let counter = 1;
-    let savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
-    if (savedFees.length > 0) counter = savedFees.length + 1;
+    let counter = 1;
+    let savedFees = JSON.parse(localStorage.getItem("gateFeeRecords") || "[]");
+    if (savedFees.length > 0) counter = savedFees.length + 1;
 
-    let savedPort = null; // for reusing printer
+    let savedPort = null; // for reusing printer
 
-    document.getElementById("gateForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const data = new FormData(e.target);
-      const entry = {
-        receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
-        name: data.get("fullName"),
-        phone: data.get("phone"),
-        event: data.get("eventName"),
-        amount: data.get("amount"),
-        method: data.get("paymentMethod"),
-        date: data.get("paymentDate"),
-        signature: data.get("signature"),
-        servedBy: localStorage.getItem("loggedInUser") || "unknown"
-      };
+    document.getElementById("gateForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const data = new FormData(e.target);
+      
+      const entry = {
+        receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
+        name: data.get("fullName"),
+        phone: data.get("phone"),
+        event: data.get("eventName"),
+        amount: data.get("amount"),
+        method: data.get("paymentMethod"),
+        date: data.get("paymentDate"),
+        signature: data.get("signature"),
+        servedBy: localStorage.getItem("loggedInUser") || "unknown"
+      };
 
-      savedFees.push(entry);
-      localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
+      savedFees.push(entry);
+      localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
 
-      if (navigator.onLine) {
-        try {
-          await db.ref("gateFeeRecords/" + entry.receiptNo).set(entry);
-        } catch (err) {
-          console.warn("Firebase sync failed:", err.message);
-        }
-      }
+      if (navigator.onLine) {
+        try {
+          // FIX: Use .push() to ensure a unique key for storing data in Firebase
+          await db.ref("gateFeeRecords").push().set(entry);
+        } catch (err) {
+          console.warn("Firebase sync failed: ", err.message);
+        }
+      }
 
-      showReceipt(entry);
-      e.target.reset();
-      document.getElementById("paymentDate").valueAsDate = new Date();
+      showReceipt(entry);
+      e.target.reset();
+      document.getElementById("paymentDate").valueAsDate = new Date();
 
-      setTimeout(() => {
-        bluetoothPrint(entry);
-      }, 500);
-    });
+      setTimeout(() => {
+        bluetoothPrint(entry);
+      }, 500);
+    });
 
-    function showReceipt(entry) {
-      const box = document.getElementById("receiptBox");
-      box.innerHTML = `
-        <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
-        <h3>KAKUMIRO BOOMA FC</h3>
-        <p><strong>EST. 2012</strong></p>
-        <p style="font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
-        <p><strong>Receipt No:</strong><br>${entry.receiptNo}</p>
-        <p><strong>Name:</strong><br>${entry.name || '-'}</p>
-        <p><strong>Phone:</strong><br>${entry.phone || '-'}</p>
-        <p><strong>Event:</strong><br>${entry.event}</p>
-        <p><strong>Amount Paid:</strong><br>UGX ${entry.amount}</p>
-        <p><strong>Payment Method:</strong><br>${entry.method}</p>
-        <p><strong>Date:</strong><br>${entry.date}</p>
-        <p><strong>Served By:</strong><br>${entry.servedBy}</p>
-        <p style="margin-top:15px;">We appreciate your support!</p>
-        <p class="team-motto">One Team, One Dream</p>
-      `;
-      box.style.display = "block";
-    }
-    
-    async function bluetoothPrint(entry) {
-      const text = `
+    function showReceipt(entry) {
+      const box = document.getElementById("receiptBox");
+      box.innerHTML = `
+        <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
+        <h3>KAKUMIRO BOOMA FC</h3>
+        <p><strong>EST. 2012</strong></p>
+        <p style="font-size: 18px; font-weight:bold;">GATE RECEIPT</p>
+        <p><strong>Receipt No:</strong><br>${entry.receiptNo}</p>
+        <p><strong>Name:</strong><br>${entry.name || '-'}</p>
+        <p><strong>Phone:</strong><br>${entry.phone || '-'}</p>
+        <p><strong>Event:</strong><br>${entry.event}</p>
+        <p><strong>Amount Paid:</strong><br>UGX ${entry.amount}</p>
+        <p><strong>Payment Method:</strong><br>${entry.method}</p>
+        <p><strong>Date:</strong><br>${entry.date}</p>
+        <p><strong>Served By:</strong><br>${entry.servedBy}</p>
+        <p style="margin-top:15px;">We appreciate your support!</p>
+        <p class="team-motto">One Team, One Dream</p>
+      `;
+      box.style.display = "block";
+    }
+    
+    async function bluetoothPrint(entry) {
+      const text = `
 ============================
 <div class="receipt-logo"><img src="logo.jpg" alt="Club Logo" /></div>
-       KAKUMIRO BOOMA FC
-           EST. 2016
-         GATE RECEIPT
+       KAKUMIRO BOOMA FC
+           EST. 2016
+         GATE RECEIPT
 ============================
 
 Receipt No: ${entry.receiptNo}
-Name      : ${entry.name || '-'}
-Phone     : ${entry.phone || '-'}
-Event     : ${entry.event}
-Amount    : UGX ${entry.amount}
-Method    : ${entry.method}
-Date      : ${entry.date}
+Name      : ${entry.name || '-'}
+Phone     : ${entry.phone || '-'}
+Event     : ${entry.event}
+Amount    : UGX ${entry.amount}
+Method    : ${entry.method}
+Date      : ${entry.date}
 Served By : ${entry.servedBy}
 
 ============================
-   One Team, One Dream
+   One Team, One Dream
 ============================
 
 
 \n\n\n`;
 
-      const encoder = new TextEncoder();
-      const data = encoder.encode(text);
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
 
-      try {
-        const port = await navigator.serial.requestPort();
-        await port.open({ baudRate: 9600 });
+      try {
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 9600 });
 
-        const writer = port.writable.getWriter();
-        await writer.write(data);
-        writer.releaseLock();
-        await port.close();
+        const writer = port.writable.getWriter();
+        await writer.write(data);
+        writer.releaseLock();
+        await port.close();
 
-        console.log("Printed successfully.");
-      } catch (err) {
-        console.error("Bluetooth Print Failed:", err.message);
-        alert("Bluetooth Print Failed: " + err.message);
-      }
-    }
-    function loadGateFeeData() {
-  if (navigator.onLine) {
-    // Load from Firebase
-    const dbRef = firebase.database().ref("gateFees");
-    dbRef.once("value", snapshot => {
-      const data = snapshot.val();
-      if (data) {
-        displayGateFeeData(Object.values(data));
-        localStorage.setItem("gateFeeRecords", JSON.stringify(Object.values(data))); // Keep local copy
-      } else {
-        displayGateFeeData([]);
-      }
-    });
-  } else {
-    // Offline: Load from localStorage
-    const offlineData = JSON.parse(localStorage.getItem("gateFeeRecords")) || [];
-    displayGateFeeData(offlineData);
-  }
-}
-  </script>
+        console.log("Printed successfully.");
+      } catch (err) {
+        console.error("Bluetooth Print Failed:", err.message);
+        alert("Bluetooth Print Failed: " + err.message);
+      }
+    }
+    
+    // FIX: Function to load existing data and update the local counter
+    function loadGateFeeData() {
+      if (navigator.onLine) {
+        // Load from Firebase using the correct path
+        const dbRef = firebase.database().ref("gateFeeRecords");
+        dbRef.once("value", snapshot => {
+          const data = snapshot.val();
+          if (data) {
+            const fetchedRecords = Object.values(data);
+            savedFees = fetchedRecords; // Update the in-memory array
+            localStorage.setItem("gateFeeRecords", JSON.stringify(fetchedRecords)); 
+            // Update the counter based on fetched data size
+            counter = savedFees.length + 1;
+            console.log(`Loaded ${savedFees.length} records. Next receipt will be ${counter}.`);
+          }
+        });
+      } else {
+        // Offline: Update counter based on localStorage
+        const offlineData = JSON.parse(localStorage.getItem("gateFeeRecords")) || [];
+        savedFees = offlineData; // Update the in-memory array
+        counter = savedFees.length + 1;
+        console.log(`Offline mode. Loaded ${savedFees.length} records locally. Next receipt will be ${counter}.`);
+      }
+    }
+
+    // FIX: Call the function on page load to sync data and counter
+    window.onload = loadGateFeeData; 
+  </script>
 
 </body>
 </html>
