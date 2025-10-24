@@ -67,6 +67,7 @@
   </table>
 
   <button onclick="exportCSV()">Download CSV</button>
+  <button class="delete-all-btn" onclick="deleteAllRecords()">Delete All Records</button>
 </div>
 
 <script>
@@ -190,6 +191,39 @@
     
     // Local storage deletion logic was removed as fetchData now synchronizes with the cloud.
   }
+
+/* NEW: Function to delete all records in the current tab */
+  function deleteAllRecords() {
+    const isAdmin = (currentUser === "admin");
+    if (!isAdmin) {
+        alert("Deletion is restricted to administrative users. Set localStorage.setItem('loggedInUser', 'admin'); to enable.");
+        return;
+    }
+
+    const collectionName = currentTab === 'gate' ? 'Gate Fee Records' : 'Supporter Records';
+
+    const confirmed = confirm(`WARNING! Are you absolutely sure you want to delete ALL ${collectionName} from Firebase? This action cannot be undone.`);
+    
+    if (!confirmed) return;
+
+    const firebasePath = currentTab === 'gate' ? 'gateFeeRecords' : 'supporterRecords';
+
+    // Delete the entire collection by removing the top-level reference
+    db.ref(firebasePath).remove()
+        .then(() => {
+            alert(`Successfully deleted all ${collectionName}. The table will now refresh.`);
+            // Clear local storage for the current tab (for consistency)
+            const localStorageKey = currentTab === 'gate' ? 'gateFeeData' : 'supportersData';
+            localStorage.removeItem(localStorageKey);
+            // Re-fetch data, which will now show an empty table
+            fetchData(); 
+        })
+        .catch(error => {
+            console.error(`Bulk deletion failed for ${firebasePath}:`, error);
+            alert("Bulk deletion failed! Check network and Firebase Security Rules.");
+        });
+  }
+  
   function filterTable() {
     const term = document.getElementById("searchInput").value.toLowerCase();
     const tbody = document.querySelector("#recordTable tbody");
