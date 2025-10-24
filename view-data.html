@@ -162,29 +162,34 @@
     }
   }
 
-  function deleteRecord(id, type) {
-    const isAdmin = (currentUser === "admin"); // you can adjust this logic
-    if (!isAdmin) {
-      alert("Only admins can delete records.");
-      return;
-    }
+  function deleteRecord(firebaseKey, type) {
+    // NOTE: This assumes 'currentUser' and 'db' are defined globally.
+    const isAdmin = (currentUser === "admin");
+    if (!isAdmin) {
+      alert("Deletion is restricted to administrative users. Set localStorage.setItem('loggedInUser', 'admin'); to enable.");
+      return;
+    }
 
-    const confirmed = confirm("Are you sure you want to delete this record?");
-    if (!confirmed) return;
+    const confirmed = confirm("Are you sure you want to delete this record from Firebase?");
+    if (!confirmed) return;
 
-    // Delete from Firebase
-    const firebasePath = type === 'gate' ? 'gateFeeRecords' : 'supporterRecords';
-    db.ref(`${firebasePath}/${id}`).remove().catch(console.error);
-
-    // Delete from localStorage
-    const key = type === 'gate' ? 'gateFeeData' : 'supportersData';
-    const local = JSON.parse(localStorage.getItem(key) || "[]");
-    const updated = local.filter(item => (type === 'gate' ? item.receiptNo : item.id) !== id);
-    localStorage.setItem(key, JSON.stringify(updated));
-
-    fetchData();
-  }
-
+    // Determine the correct Firebase path
+    const firebasePath = type === 'gate' ? 'gateFeeRecords' : 'supporterRecords';
+    
+    // Use the firebaseKey to target the specific record node for removal
+    db.ref(`${firebasePath}/${firebaseKey}`).remove()
+      .then(() => {
+        alert("Record deleted successfully.");
+        // Re-fetch all data to update the table and remove the deleted record
+        fetchData(); 
+      })
+      .catch(error => {
+        console.error("Firebase deletion failed:", error);
+        alert("Deletion failed! Please check your Firebase Security Rules (must allow '.write' to the path).");
+      });
+    
+    // Local storage deletion logic was removed as fetchData now synchronizes with the cloud.
+  }
   function filterTable() {
     const term = document.getElementById("searchInput").value.toLowerCase();
     const tbody = document.querySelector("#recordTable tbody");
