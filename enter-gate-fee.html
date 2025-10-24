@@ -72,10 +72,15 @@
 
     let savedPort = null; // for reusing printer
 
-    document.getElementById("gateForm").addEventListener("submit", async function(e) {
-      e.preventDefault();
-      const data = new FormData(e.target);
-      const entry = {
+   document.getElementById("gateForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const data = new FormData(e.target);
+    
+    // Use the current length of savedFees to calculate a temporary sequential number
+    // Note: This is ONLY for display and local storage, NOT for the Firebase key.
+    const localReceiptNumber = "RCPT-" + String(savedFees.length + 1).padStart(4, "0");
+
+    const entry = {
         receiptNo: "RCPT-" + String(counter++).padStart(4, "0"),
         name: data.get("fullName"),
         phone: data.get("phone"),
@@ -87,18 +92,21 @@
         servedBy: localStorage.getItem("loggedInUser") || "unknown"
       };
 
-      savedFees.push(entry);
-      localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
+    savedFees.push(entry);
+    localStorage.setItem("gateFeeRecords", JSON.stringify(savedFees));
 
-      if (navigator.onLine) {
-        try {
-          await db.ref("gateFeeRecords/" + entry.receiptNo).set(entry);
-        } catch (err) {
-          console.warn("Firebase sync failed:", err.message);
-        }
-      }
-
-      showReceipt(entry);
+    if (navigator.onLine) {
+        try {
+       // 🔑 CRITICAL FIX: Use .push() to generate a unique key
+          const newRef = db.ref("gateFeeRecords").push();
+          await newRef.set(entry); 
+          console.log("Data synced successfully with key:", newRef.key);
+        } catch (err) {
+          console.warn("Firebase sync failed: Permission Denied or Network Error.", err.message);
+        }
+    }
+    
+    showReceipt(entry);
       e.target.reset();
       document.getElementById("paymentDate").valueAsDate = new Date();
 
