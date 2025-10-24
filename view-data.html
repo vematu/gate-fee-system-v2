@@ -185,6 +185,7 @@
 
   // FIX 3: Accept the firebaseKey and use it for removal
   function deleteRecord(firebaseKey, type) {
+    // NOTE: This assumes 'currentUser' and 'db' are defined globally.
     const isAdmin = (currentUser === "admin");
     if (!isAdmin) {
       alert("Deletion is restricted to administrative users. Set localStorage.setItem('loggedInUser', 'admin'); to enable.");
@@ -194,24 +195,23 @@
     const confirmed = confirm("Are you sure you want to delete this record from Firebase?");
     if (!confirmed) return;
 
-    // Delete from Firebase
+    // Determine the correct Firebase path
     const firebasePath = type === 'gate' ? 'gateFeeRecords' : 'supporterRecords';
     
-    // The key is the actual Firebase push ID, so the path is correct
+    // Use the firebaseKey to target the specific record node for removal
     db.ref(`${firebasePath}/${firebaseKey}`).remove()
       .then(() => {
         alert("Record deleted successfully.");
-        // Re-fetch all data to update the table immediately
-        fetchData();
+        // Re-fetch all data to update the table and remove the deleted record
+        fetchData(); 
       })
       .catch(error => {
         console.error("Firebase deletion failed:", error);
         alert("Deletion failed! Please check your Firebase Security Rules (must allow '.write' to the path).");
       });
     
-    // Local storage deletion is no longer necessary here since fetchData will overwrite the old array.
+    // Local storage deletion logic was removed as fetchData now synchronizes with the cloud.
   }
-
   function filterTable() {
     const term = document.getElementById("searchInput").value.toLowerCase();
     const tbody = document.querySelector("#recordTable tbody");
